@@ -1,6 +1,6 @@
 <?php
 /**
- * Author AGriboed 2017
+ * Author AGriboed (c) 2017
  *
  * alexv1rs@gmail.com
  * http://v1rus.ru
@@ -10,11 +10,11 @@ namespace TeamLeader;
 
 class TeamLeader
 {
-    /**
-     * @var string Plugin's key
-     */
-    private $key = 'teamleader';
+    const PLUGIN_KEY = 'teamleader';
     const API_URL = 'https://app.teamleader.eu/api';
+
+    private $contact_fields = [];
+    private $deal_fields = [];
 
     public function __construct()
     {
@@ -26,13 +26,13 @@ class TeamLeader
      */
     private function init()
     {
-        add_shortcode($this->key, [$this, 'shortcodeHandler']);
-        add_action('wp_ajax_' . $this->key, [$this, 'ajaxHandler']);
-        add_action('wp_ajax_nopriv_' . $this->key, [$this, 'ajaxHandler']);
-        add_action('admin_init', [$this, 'registerSettings']);
+        add_shortcode(self::PLUGIN_KEY, array($this, 'shortcodeHandler'));
+        add_action('wp_ajax_' . self::PLUGIN_KEY, array($this, 'ajaxHandler'));
+        add_action('wp_ajax_nopriv_' . self::PLUGIN_KEY, array($this, 'ajaxHandler'));
+        add_action('admin_init', array($this, 'registerSettings'));
         add_action('admin_menu', function () {
             add_submenu_page('options-general.php', 'Team Leader', 'Team Leader',
-                'manage_options', $this->key, [$this, 'renderOptionsPage']);
+                'manage_options', self::PLUGIN_KEY, array($this, 'renderOptionsPage'));
         }
         );
     }
@@ -42,10 +42,11 @@ class TeamLeader
      */
     public function registerSettings()
     {
-        register_setting($this->key, $this->key . '_api_group');
-        register_setting($this->key, $this->key . '_api_key');
-        register_setting($this->key, $this->key . '_contact_fields');
-        register_setting($this->key, $this->key . '_deal_fields');
+        register_setting(self::PLUGIN_KEY, self::PLUGIN_KEY . '_api_group');
+        register_setting(self::PLUGIN_KEY, self::PLUGIN_KEY . '_api_key');
+        register_setting(self::PLUGIN_KEY, self::PLUGIN_KEY . '_form');
+        register_setting(self::PLUGIN_KEY, self::PLUGIN_KEY . '_contact_fields');
+        register_setting(self::PLUGIN_KEY, self::PLUGIN_KEY . '_deal_fields');
     }
 
     /**
@@ -55,239 +56,13 @@ class TeamLeader
      */
     private function getContactCrmFields()
     {
-        $crm_fields = [
-            'forename' => [
-                'title' => 'First name',
-                'required' => true,
-                'type' => 'text',
-                'description' => 'Required',
-            ],
-            'surname' => [
-                'title' => 'Last name',
-                'required' => true,
-                'type' => 'text',
-                'description' => 'Required',
-            ],
-            'email' => [
-                'title' => 'Email',
-                'required' => true,
-                'type' => 'text',
-                'description' => 'Required',
-            ],
-            'salutation' => [
-                'title' => 'Salutation',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'telephone' => [
-                'title' => 'Phone',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'gsm' => [
-                'title' => 'Mobile',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'website' => [
-                'title' => 'Website',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'country' => [
-                'title' => 'Country',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'country code according to ISO 3166-1 alpha-2. For Belgium: "BE"',
-            ],
-            'zipcode' => [
-                'title' => 'Zip Code',
-                'required' => false,
-                'type' => 'number',
-                'description' => '',
-            ],
-            'city' => [
-                'title' => 'City',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'street' => [
-                'title' => 'Street',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'number' => [
-                'title' => 'Number',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
+        if (empty($this->contact_fields)
+            && file_exists(__DIR__ . '/fields/contact.php')
+        ) {
+            $this->contact_fields = require __DIR__ . '/fields/contact.php';
+        }
 
-            'address_name_delivery' => [
-                'title' => 'Delivery Address',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'zipcode_delivery' => [
-                'title' => 'Delivery Zip Code',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'city_delivery' => [
-                'title' => 'Delivery City',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'street_delivery' => [
-                'title' => 'Delivery Street',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'number_delivery' => [
-                'title' => 'Delivery Number',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'address_name_visiting' => [
-                'title' => 'Visiting Address',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'zipcode_visiting' => [
-                'title' => 'Visiting Zip Code',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'city_visiting' => [
-                'title' => 'Visiting City',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'street_visiting' => [
-                'title' => 'Visiting Street',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'number_visiting' => [
-                'title' => 'Visiting Number',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'address_name_invoicing' => [
-                'title' => 'Invoicing Address',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'zipcode_invoicing' => [
-                'title' => 'Invoicing Zip Code',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'city_invoicing' => [
-                'title' => 'Invoicing City',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'street_invoicing' => [
-                'title' => 'Invoicing Street',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'number_invoicing' => [
-                'title' => 'Invoicing Number',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'invoice_email_address' => [
-                'title' => 'Invoice Email',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'language' => [
-                'title' => 'Language',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'language code according to ISO 639-1. For Dutch: "NL"',
-            ],
-            'gender' => [
-                'title' => 'Gender',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'M/F/U',
-            ],
-            'dob' => [
-                'title' => 'Date Of Birth',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'unix timestamp',
-            ],
-            'description' => [
-                'title' => 'Description',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'background information on the contact',
-            ],
-            'newsletter' => [
-                'title' => 'Newsletter',
-                'required' => false,
-                'type' => 'boolean',
-                'description' => '',
-            ],
-            'add_tag_by_string' => [
-                'title' => 'Add tag by string',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'string: pass one or more tags, comma-separated. Existing tags will be reused, other tags will be automatically created for you.',
-            ],
-            'automerge_by_name' => [
-                'title' => 'Auto merge by name',
-                'required' => false,
-                'type' => 'boolean',
-                'description' => 'If this flag is set to 1, Teamleader will merge this info into an existing contact with the same forename and surname, if it finds any. Default: 0',
-            ],
-            'automerge_by_email' => [
-                'title' => 'Auto merge by email',
-                'required' => false,
-                'type' => 'boolean',
-                'description' => 'If this flag is set to 1, Teamleader will merge this info into an existing contact with the same email address, if it finds any.',
-            ],
-            'tracking' => [
-                'title' => 'Tracking',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'title of the activity',
-            ],
-            'tracking_long' => [
-                'title' => 'Tracking Long',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'description of the activity',
-            ],
-        ];
-
-        return $crm_fields;
+        return $this->contact_fields;
     }
 
     /**
@@ -297,118 +72,13 @@ class TeamLeader
      */
     private function getDealCrmFields()
     {
-        $crm_fields = [
-            'title' => [
-                'title' => 'Title',
-                'required' => true,
-                'type' => 'text',
-                'description' => 'Required',
-            ],
-            'source' => [
-                'title' => 'Source',
-                'required' => true,
-                'type' => 'text',
-                'description' => 'Required',
-            ],
-            'description_1' => [
-                'title' => 'Description 1',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'price_1' => [
-                'title' => 'Price 1',
-                'required' => false,
-                'type' => 'number',
-                'description' => '',
-            ],
-            'amount_1' => [
-                'title' => 'Amount 1',
-                'required' => false,
-                'type' => 'number',
-                'description' => '',
-            ],
-            'vat_1' => [
-                'title' => 'Vat 1',
-                'required' => false,
-                'type' => 'number',
-                'description' => '00/ 06 / 12 / 21 / CM / EX / MC / VCMD: the vat tariff for this line',
-            ],
-            'product_id_1' => [
-                'title' => 'Product id 1',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'id of the product (optional)',
-            ],
-            'account_1' => [
-                'title' => 'Account 1',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'id of the bookkeeping account (optional)',
-            ],
-            'subtitle_1' => [
-                'title' => 'Subtitle 1',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'description_2' => [
-                'title' => 'Description 2',
-                'required' => false,
-                'type' => 'text',
-                'description' => '',
-            ],
-            'price_2' => [
-                'title' => 'Price 2',
-                'required' => false,
-                'type' => 'number',
-                'description' => '',
-            ],
-            'sys_department_id' => [
-                'title' => 'Sys Department Id',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'ID of the department the deal will be added to',
-            ],
-            'responsible_sys_client_id' => [
-                'title' => 'Responsible Sys Client Id',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'id of the user that is responsible for this deal',
-            ],
-            'phase_id' => [
-                'title' => 'Phase Id',
-                'required' => false,
-                'type' => 'number',
-                'description' => 'new phase id this deal should be moved to',
-            ],
-            'description' => [
-                'title' => 'Description',
-                'required' => false,
-                'type' => 'text',
-                'description' => ' If this parameter is filled out a quotation (PDF) is generated by Teamleader using the text provided and the items. The PDF is accessible via the web interface.',
-            ],
-            'budget_estimation' => [
-                'title' => 'Budget Estimation',
-                'required' => false,
-                'type' => 'number',
-                'description' => 'budget estimation for this deal. This value will be overwritten once a quotation is made for this deal',
-            ],
-            'optional_contact_id' => [
-                'title' => 'Optional Contact Id',
-                'required' => false,
-                'type' => 'number',
-                'description' => 'if this deal is related to a company, you can specify the ID of a related contact within that company via this parameter',
-            ],
-            'filter_double_sales' => [
-                'title' => 'Filter Double Sales',
-                'required' => false,
-                'type' => 'text',
-                'description' => 'if set to 1, an extra check added to make sure the deal isn\'t a double of the previous one.',
-            ],
-        ];
+        if (empty($this->deal_fields)
+            && file_exists(__DIR__ . '/fields/deal.php')
+        ) {
+            $this->deal_fields = require __DIR__ . '/fields/deal.php';
+        }
 
-        return $crm_fields;
+        return $this->deal_fields;
     }
 
     /**
@@ -418,16 +88,19 @@ class TeamLeader
     {
         $contact_data = $this->getOptionContactFields();
         $deal_data = $this->getOptionDealFields();
-        $api_group_name = $this->key . '_api_group';
-        $api_secret_name = $this->key . '_api_key';
-        $contact_fields_name = $this->key . '_contact_fields';
-        $deal_fields_name = $this->key . '_deal_fields';
+        $form = $this->getOptionForm();
+        $api_group_name = self::PLUGIN_KEY . '_api_group';
+        $api_secret_name = self::PLUGIN_KEY . '_api_key';
+        $form_name = self::PLUGIN_KEY . '_form';
+        $contact_fields_name = self::PLUGIN_KEY . '_contact_fields';
+        $deal_fields_name = self::PLUGIN_KEY . '_deal_fields';
         ?>
         <div>
             <form method="post" action="options.php">
                 <h1>TeamLeader</h1>
-                <?php settings_fields($this->key); ?>
-                <?php do_settings_sections($this->key); ?>
+
+                <?php settings_fields(self::PLUGIN_KEY); ?>
+                <?php do_settings_sections(self::PLUGIN_KEY); ?>
                 <table class="wp-list-table widefat fixed striped">
                     <tr>
                         <th scope="row"><strong>Your API group</strong></th>
@@ -440,6 +113,35 @@ class TeamLeader
                         <th scope="row"><strong>Your API key</strong></th>
                         <td><textarea
                                     name="<?php echo $api_secret_name; ?>"><?php echo $this->getOptionApiSecret() ?></textarea>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><strong>Form settings</strong></th>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Form title</th>
+                        <td><input type="text"
+                                   name="<?php echo $form_name; ?>[title]"
+                                   value="<?php echo !empty($form['title']) ? $form['title'] : '' ?>">
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Submit button text</th>
+                        <td><input type="text"
+                                   name="<?php echo $form_name; ?>[submit]"
+                                   value="<?php echo !empty($form['submit']) ? $form['submit'] : '' ?>">
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">After submission text</th>
+                        <td><input type="text"
+                                   name="<?php echo $form_name; ?>[text]"
+                                   value="<?php echo !empty($form['text']) ? $form['text'] : '' ?>">
                         </td>
                         <td></td>
                     </tr>
@@ -587,8 +289,13 @@ class TeamLeader
      */
     public function shortcodeHandler($atts = [])
     {
-        $atts = shortcode_atts([], $atts);
+        $atts = shortcode_atts(array(), $atts);
         $ajax_url = admin_url('admin-ajax.php');
+
+        $form = $this->getOptionForm();
+        $form_title = !empty($form['title']) ? $form['title'] : '';
+        $form_submit = !empty($form['submit']) ? $form['submit'] : '';
+        $form_text = !empty($form['text']) ? $form['text'] : '';
 
         $contact_options = $this->getOptionContactFields();
         $contact_fields = $this->getContactCrmFields();
@@ -605,15 +312,19 @@ class TeamLeader
 
                 $fields_html .= '<label>' . $label;
 
-                if ($field['type'] === 'text') {
+                if ('text' === $field['type']) {
                     $fields_html .= '<input type="text" name="contact[' . $key . ']" value="' . $value . '" placeholder="' . $label . '" ' . $required . '>';
                 }
 
-                if ($field['type'] === 'number') {
+                if ('textarea' === $field['type']) {
+                    $fields_html .= '<textarea name="contact[' . $key . ']" placeholder="' . $label . '" ' . $required . '>' . $value . '</textarea>';
+                }
+
+                if ('number' === $field['type']) {
                     $fields_html .= '<input type="number" name="contact[' . $key . ']" value="' . $value . '" placeholder="' . $label . '" ' . $required . '>';
                 }
 
-                if ($field['type'] === 'boolean') {
+                if ('boolean' === $field['type']) {
                     $checked = !empty($value) ? 'checked' : '';
                     $fields_html .= '<input type="checkbox" name="contact[' . $key . ']" ' . $required . ' ' . $checked . '>';
                 }
@@ -624,21 +335,25 @@ class TeamLeader
 
         foreach ($deal_fields as $key => $field) {
             if (!empty($deal_options[$key]['public'])) {
-                $label = isset($deal_options[$key]['label']) ? $deal_options[$key]['label'] : $field['title'];
+                $label = !empty($deal_options[$key]['label']) ? $deal_options[$key]['label'] : $field['title'];
                 $required = !empty($deal_options[$key]['required']) ? 'required="required"' : '';
-                $value = isset($deal_options[$key]['default']) ? $deal_options[$key]['default'] : '';
+                $value = !empty($deal_options[$key]['default']) ? $deal_options[$key]['default'] : '';
 
                 $fields_html .= '<label>' . $label;
 
-                if ($field['type'] === 'text') {
+                if ('text' === $field['type']) {
                     $fields_html .= '<input type="text" name="deal[' . $key . ']" value="' . $value . '" placeholder="' . $label . '" ' . $required . '>';
                 }
 
-                if ($field['type'] === 'number') {
+                if ('textarea' === $field['type']) {
+                    $fields_html .= '<textarea name="deal[' . $key . ']" placeholder="' . $label . '" ' . $required . '>' . $value . '</textarea>';
+                }
+
+                if ('number' === $field['type']) {
                     $fields_html .= '<input type="number" name="deal[' . $key . ']" value="' . $value . '" placeholder="' . $label . '" ' . $required . '>';
                 }
 
-                if ($field['type'] === 'boolean') {
+                if ('boolean' === $field['type']) {
                     $checked = !empty($value) ? 'checked' : '';
                     $fields_html .= '<input type="checkbox" name="deal[' . $key . ']" ' . $required . ' ' . $checked . '>';
                 }
@@ -647,30 +362,30 @@ class TeamLeader
             }
         }
 
-        $html = '<div class="teamleader-container"><form>';
+        $key = self::PLUGIN_KEY;
+        $html = '<div class="' . $key . '-container"><form><div class="' . $key . '-title">' . $form_title . '</div>';
         $html .= $fields_html;
-        $html .= '<button type="submit" class="btn btn-primary">Add contact to CRM</button></form><div class="teamleader-result"></div></div>';
-
+        $html .= '<button type="submit" class="btn btn-primary">' . $form_submit . '</button></form><div class="teamleader-result"></div></div>';
         $html .= <<<HTML
 <script>
 (function($) {
 $(document).ready(function()
 {
-   var form = $('.teamleader-container').find('form'),
-       result = $('.teamleader-container').find('.teamleader-result');
+   var form = $('.{$key}-container').find('form'),
+       result = $('.{$key}-container').find('.{$key}-result');
    
    form.submit(function(e){
     e.preventDefault();
-    var data = 'action={$this->key}&' + form.serialize();
+    var data = 'action={$key}&' + form.serialize();
     
     form.fadeOut();
-    
+ 
      $.ajax({
       method: "POST",
       url: '{$ajax_url}',
       data: data,
       success: function( response ) {
-        result.html('<h2>Thank you!</h2>').fadeIn();
+        result.html('<div class="{$key}-success">{$form_text}</div>').fadeIn();
         setTimeout(function() {
             result.html('').fadeOut();
             form.fadeIn();
@@ -690,7 +405,7 @@ HTML;
      */
     private function getOptionApiGroup()
     {
-        return get_option($this->key . '_api_group', null);
+        return get_option(self::PLUGIN_KEY . '_api_group', null);
     }
 
     /**
@@ -698,7 +413,15 @@ HTML;
      */
     private function getOptionApiSecret()
     {
-        return get_option($this->key . '_api_key', null);
+        return get_option(self::PLUGIN_KEY . '_api_key', null);
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getOptionForm()
+    {
+        return get_option(self::PLUGIN_KEY . '_form', array());
     }
 
     /**
@@ -706,7 +429,7 @@ HTML;
      */
     private function getOptionContactFields()
     {
-        return get_option($this->key . '_contact_fields', array());
+        return get_option(self::PLUGIN_KEY . '_contact_fields', array());
     }
 
     /**
@@ -714,7 +437,7 @@ HTML;
      */
     private function getOptionDealFields()
     {
-        return get_option($this->key . '_deal_fields', array());
+        return get_option(self::PLUGIN_KEY . '_deal_fields', array());
     }
 
     /**
@@ -731,8 +454,8 @@ HTML;
         $deal_options = $this->getOptionDealFields();
         $deal_fields = $this->getDealCrmFields();
 
-        $contact_post = [];
-        $deal_post = [];
+        $contact_post = array();
+        $deal_post = array();
 
         foreach ($contact_fields as $key => $field) {
             $value = isset($_POST['contact'][$key]) ? $_POST['contact'][$key] : null;
