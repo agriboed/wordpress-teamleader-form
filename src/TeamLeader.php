@@ -13,6 +13,7 @@ class TeamLeader
     const PLUGIN_KEY = 'teamleader';
     const API_URL = 'https://app.teamleader.eu/api';
 
+    private $plugin_file;
     private $contact_fields = [];
     private $deal_fields = [];
 
@@ -26,15 +27,22 @@ class TeamLeader
      */
     private function init()
     {
-        add_shortcode(self::PLUGIN_KEY, array($this, 'shortcodeHandler'));
-        add_action('wp_ajax_' . self::PLUGIN_KEY, array($this, 'ajaxHandler'));
-        add_action('wp_ajax_nopriv_' . self::PLUGIN_KEY, array($this, 'ajaxHandler'));
-        add_action('admin_init', array($this, 'registerSettings'));
+        $this->plugin_file = WP_PLUGIN_DIR . '/teamleader/plugin.php';
+
+        add_shortcode(self::PLUGIN_KEY, [$this, 'shortcodeHandler']);
+        add_action('wp_ajax_' . self::PLUGIN_KEY, [$this, 'ajaxHandler']);
+        add_action('wp_ajax_nopriv_' . self::PLUGIN_KEY, [$this, 'ajaxHandler']);
+        add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_menu', function () {
             add_submenu_page('options-general.php', 'Team Leader', 'Team Leader',
-                'manage_options', self::PLUGIN_KEY, array($this, 'renderOptionsPage'));
-        }
-        );
+                'manage_options', self::PLUGIN_KEY, [$this, 'renderOptionsPage']);
+        });
+        add_filter('plugin_action_links_' . plugin_basename($this->plugin_file), function ($links) {
+            $l = [
+                '<a href="' . admin_url('options-general.php?page=' . self::PLUGIN_KEY) . '">Settings</a>',
+            ];
+            return array_merge($links, $l);
+        });
     }
 
     /**
@@ -50,38 +58,6 @@ class TeamLeader
     }
 
     /**
-     * See http://apidocs.teamleader.eu/crm.php
-     *
-     * @return array
-     */
-    private function getContactCrmFields()
-    {
-        if (empty($this->contact_fields)
-            && file_exists(__DIR__ . '/fields/contact.php')
-        ) {
-            $this->contact_fields = require __DIR__ . '/fields/contact.php';
-        }
-
-        return $this->contact_fields;
-    }
-
-    /**
-     * See http://apidocs.teamleader.eu/opportunities.php
-     *
-     * @return array
-     */
-    private function getDealCrmFields()
-    {
-        if (empty($this->deal_fields)
-            && file_exists(__DIR__ . '/fields/deal.php')
-        ) {
-            $this->deal_fields = require __DIR__ . '/fields/deal.php';
-        }
-
-        return $this->deal_fields;
-    }
-
-    /**
      * Render admin options page
      */
     public function renderOptionsPage()
@@ -89,6 +65,8 @@ class TeamLeader
         $contact_data = $this->getOptionContactFields();
         $deal_data = $this->getOptionDealFields();
         $form = $this->getOptionForm();
+        $api_group = $this->getOptionApiGroup();
+        $api_secret = $this->getOptionApiSecret();
         $api_group_name = self::PLUGIN_KEY . '_api_group';
         $api_secret_name = self::PLUGIN_KEY . '_api_key';
         $form_name = self::PLUGIN_KEY . '_form';
@@ -104,175 +82,185 @@ class TeamLeader
                 <table class="wp-list-table widefat fixed striped">
                     <tr>
                         <th scope="row"><strong>Your API group</strong></th>
-                        <td style="width:40%"><input type="text" name="<?php echo $api_group_name; ?>"
-                                                     value="<?php echo $this->getOptionApiGroup(); ?>"></td>
+                        <td style="width:40%">
+                            <input type="text" style="width:100%" name="<?php echo $api_group_name; ?>"
+                                   value="<?php echo $api_group ?>"></td>
                         <td>
+                            <a href="https://app.teamleader.eu/apiwebhooks.php?show_key" target="_blank">
+                                Get Keys
+                            </a>
                         </td>
                     </tr>
                     <tr>
                         <th scope="row"><strong>Your API key</strong></th>
-                        <td><textarea
-                                    name="<?php echo $api_secret_name; ?>"><?php echo $this->getOptionApiSecret() ?></textarea>
+                        <td><textarea style="width:100%"
+                                      name="<?php echo $api_secret_name; ?>"><?php echo $api_secret; ?></textarea>
                         </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><strong>Form settings</strong></th>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Form title</th>
-                        <td><input type="text"
-                                   name="<?php echo $form_name; ?>[title]"
-                                   value="<?php echo !empty($form['title']) ? $form['title'] : '' ?>">
+                        <td>
+                            <a href="https://app.teamleader.eu/apiwebhooks.php?show_key" target="_blank">
+                                Get Keys
+                            </a>
                         </td>
-                        <td></td>
                     </tr>
-                    <tr>
-                        <th scope="row">Submit button text</th>
-                        <td><input type="text"
-                                   name="<?php echo $form_name; ?>[submit]"
-                                   value="<?php echo !empty($form['submit']) ? $form['submit'] : '' ?>">
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">After submission text</th>
-                        <td><input type="text"
-                                   name="<?php echo $form_name; ?>[text]"
-                                   value="<?php echo !empty($form['text']) ? $form['text'] : '' ?>">
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><strong>Contact fields</strong></th>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <?php foreach ($this->getContactCrmFields() as $key => $field) {
-                        ?>
+                    <?php if ($api_group && $api_secret): ?>
                         <tr>
-                            <th scope="row"><?php echo $field['title'] ?></th>
-                            <td>
-                                <label>
-                                    Public?
-                                    <input type="checkbox"
-                                           name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[public]"
-                                        <?php
-                                        if (isset($contact_data[$key]['public'])) {
+                            <th scope="row"><strong>Form settings</strong></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Form title</th>
+                            <td><input type="text"
+                                       name="<?php echo $form_name; ?>[title]"
+                                       value="<?php echo !empty($form['title']) ? $form['title'] : '' ?>">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Submit button text</th>
+                            <td><input type="text"
+                                       name="<?php echo $form_name; ?>[submit]"
+                                       value="<?php echo !empty($form['submit']) ? $form['submit'] : '' ?>">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">After submission text</th>
+                            <td><input type="text"
+                                       name="<?php echo $form_name; ?>[text]"
+                                       value="<?php echo !empty($form['text']) ? $form['text'] : '' ?>">
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><strong>Contact fields</strong></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <?php foreach ($this->getContactCrmFields() as $key => $field) {
+                            ?>
+                            <tr>
+                                <th scope="row"><?php echo $field['title'] ?></th>
+                                <td>
+                                    <label>
+                                        Public?
+                                        <input type="checkbox"
+                                               name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[public]"
+                                            <?php
+                                            if (isset($contact_data[$key]['public'])) {
+                                                echo 'checked';
+                                            }
+                                            ?> />
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Required
+                                        <input type="checkbox" placeholder="Required"
+                                               name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[required]" <?php
+                                        if ($field['required'] === true || isset($contact_data[$key]['required'])) {
                                             echo 'checked';
                                         }
-                                        ?> />
-                                </label>
-                                <br>
-                                <label>
-                                    Required
-                                    <input type="checkbox" placeholder="Required"
-                                           name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[required]" <?php
-                                    if ($field['required'] === true || isset($contact_data[$key]['required'])) {
-                                        echo 'checked';
-                                    }
 
-                                    if ($field['required'] === true) {
-                                        echo ' disabled';
-                                    }
-                                    ?>>
-                                </label>
-                                <br>
-                                <label>
-                                    Default value
-                                    <input type="text" placeholder="Default value"
-                                           name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[default]"
-                                           value="<?php
-                                           if (isset($contact_data[$key]['default'])) {
-                                               echo $contact_data[$key]['default'];
-                                           }
-                                           ?>">
-                                </label>
-                                <br>
-                                <label>
-                                    Public label
-                                    <input type="text" placeholder="Public label"
-                                           name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[label]"
-                                           value="<?php
-                                           if (isset($contact_data[$key]['label'])) {
-                                               echo $contact_data[$key]['label'];
-                                           }
-                                           ?>">
-                                </label>
-                            </td>
-                            <td>
-                                <small><?php echo $field['description']; ?></small>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                    ?>
-                    <tr>
-                        <th scope="row"><strong>Deal fields</strong></th>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <?php foreach ($this->getDealCrmFields() as $key => $field) {
+                                        if ($field['required'] === true) {
+                                            echo ' disabled';
+                                        }
+                                        ?>>
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Default value
+                                        <input type="text" placeholder="Default value"
+                                               name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[default]"
+                                               value="<?php
+                                               if (isset($contact_data[$key]['default'])) {
+                                                   echo $contact_data[$key]['default'];
+                                               }
+                                               ?>">
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Public label
+                                        <input type="text" placeholder="Public label"
+                                               name="<?php echo $contact_fields_name . '[' . $key . ']'; ?>[label]"
+                                               value="<?php
+                                               if (isset($contact_data[$key]['label'])) {
+                                                   echo $contact_data[$key]['label'];
+                                               }
+                                               ?>">
+                                    </label>
+                                </td>
+                                <td>
+                                    <small><?php echo $field['description']; ?></small>
+                                </td>
+                            </tr>
+                            <?php
+                        }
                         ?>
                         <tr>
-                            <th scope="row"><?php echo $field['title'] ?></th>
-                            <td>
-                                <label>
-                                    Public?
-                                    <input type="checkbox"
-                                           name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[public]"
-                                        <?php
-                                        if (isset($deal_data[$key]['public'])) {
+                            <th scope="row"><strong>Deal fields</strong></th>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <?php foreach ($this->getDealCrmFields() as $key => $field) {
+                            ?>
+                            <tr>
+                                <th scope="row"><?php echo $field['title'] ?></th>
+                                <td>
+                                    <label>
+                                        Public?
+                                        <input type="checkbox"
+                                               name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[public]"
+                                            <?php
+                                            if (isset($deal_data[$key]['public'])) {
+                                                echo 'checked';
+                                            }
+                                            ?> />
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Required
+                                        <input type="checkbox" placeholder="Required"
+                                               name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[required]" <?php
+                                        if ($field['required'] === true || isset($deal_data[$key]['required'])) {
                                             echo 'checked';
                                         }
-                                        ?> />
-                                </label>
-                                <br>
-                                <label>
-                                    Required
-                                    <input type="checkbox" placeholder="Required"
-                                           name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[required]" <?php
-                                    if ($field['required'] === true || isset($deal_data[$key]['required'])) {
-                                        echo 'checked';
-                                    }
 
-                                    if ($field['required'] === true) {
-                                        echo ' disabled';
-                                    }
-                                    ?>>
-                                </label>
-                                <br>
-                                <label>
-                                    Default value
-                                    <input type="text" placeholder="Default value"
-                                           name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[default]"
-                                           value="<?php
-                                           if (isset($deal_data[$key]['default'])) {
-                                               echo $deal_data[$key]['default'];
-                                           }
-                                           ?>">
-                                </label>
-                                <br>
-                                <label>
-                                    Public label
-                                    <input type="text" placeholder="Public label"
-                                           name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[label]"
-                                           value="<?php
-                                           if (isset($deal_data[$key]['label'])) {
-                                               echo $deal_data[$key]['label'];
-                                           }
-                                           ?>">
-                                </label>
-                            </td>
-                            <td>
-                                <small><?php echo $field['description']; ?></small>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                    ?>
+                                        if ($field['required'] === true) {
+                                            echo ' disabled';
+                                        }
+                                        ?>>
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Default value
+                                        <input type="text" placeholder="Default value"
+                                               name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[default]"
+                                               value="<?php
+                                               if (isset($deal_data[$key]['default'])) {
+                                                   echo $deal_data[$key]['default'];
+                                               }
+                                               ?>">
+                                    </label>
+                                    <br>
+                                    <label>
+                                        Public label
+                                        <input type="text" placeholder="Public label"
+                                               name="<?php echo $deal_fields_name . '[' . $key . ']'; ?>[label]"
+                                               value="<?php
+                                               if (isset($deal_data[$key]['label'])) {
+                                                   echo $deal_data[$key]['label'];
+                                               }
+                                               ?>">
+                                    </label>
+                                </td>
+                                <td>
+                                    <small><?php echo $field['description']; ?></small>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                    <?php endif; ?>
                 </table>
                 <?php submit_button(); ?>
             </form>
@@ -289,8 +277,12 @@ class TeamLeader
      */
     public function shortcodeHandler($atts = [])
     {
-        $atts = shortcode_atts(array(), $atts);
+        $atts = shortcode_atts([], $atts);
         $ajax_url = admin_url('admin-ajax.php');
+
+        if (!$this->getOptionApiGroup() || !$this->getOptionApiSecret()) {
+            return '';
+        }
 
         $form = $this->getOptionForm();
         $form_title = !empty($form['title']) ? $form['title'] : '';
@@ -441,6 +433,38 @@ HTML;
     }
 
     /**
+     * See http://apidocs.teamleader.eu/crm.php
+     *
+     * @return array
+     */
+    private function getContactCrmFields()
+    {
+        if (empty($this->contact_fields)
+            && file_exists(__DIR__ . '/fields/contact.php')
+        ) {
+            $this->contact_fields = require __DIR__ . '/fields/contact.php';
+        }
+
+        return $this->contact_fields;
+    }
+
+    /**
+     * See http://apidocs.teamleader.eu/opportunities.php
+     *
+     * @return array
+     */
+    private function getDealCrmFields()
+    {
+        if (empty($this->deal_fields)
+            && file_exists(__DIR__ . '/fields/deal.php')
+        ) {
+            $this->deal_fields = require __DIR__ . '/fields/deal.php';
+        }
+
+        return $this->deal_fields;
+    }
+
+    /**
      * Process ajax call
      *
      * @throws \Exception
@@ -454,8 +478,8 @@ HTML;
         $deal_options = $this->getOptionDealFields();
         $deal_fields = $this->getDealCrmFields();
 
-        $contact_post = array();
-        $deal_post = array();
+        $contact_post = [];
+        $deal_post = [];
 
         foreach ($contact_fields as $key => $field) {
             $value = isset($_POST['contact'][$key]) ? $_POST['contact'][$key] : null;
@@ -528,19 +552,20 @@ HTML;
         }
 
         if ($headers['http_code'] === 400) {
-            $json = @json_decode($response, true);
+            $json = json_decode($response, true);
             if ($json !== false && isset($json['reason'])) {
                 throw new \RuntimeException('Teamleader ' . $endPoint . ' API returned status code 400 Bad Request. Reason: ' . $json['reason']);
-            } else {
-                throw new \RuntimeException('Teamleader ' . $endPoint . ' API returned status code 400 Bad Request. Data returned: ' . $response);
             }
+
+            throw new \RuntimeException('Teamleader ' . $endPoint . ' API returned status code 400 Bad Request. Data returned: ' . $response);
+
         }
 
         if ($endPoint === 'downloadInvoicePDF.php') {
             return $response;
         }
 
-        $json = @json_decode($response, true);
+        $json = json_decode($response, true);
 
         if ($json !== false) {
             return $json;

@@ -1,231 +1,231 @@
 <?php
-return array(
-    'forename' => array(
+return [
+    'forename' => [
         'title' => 'First name',
         'required' => true,
         'type' => 'text',
         'description' => 'Required',
-    ),
-    'surname' => array(
+    ],
+    'surname' => [
         'title' => 'Last name',
         'required' => true,
         'type' => 'text',
         'description' => 'Required',
-    ),
-    'email' => array(
+    ],
+    'email' => [
         'title' => 'Email',
         'required' => true,
         'type' => 'text',
         'description' => 'Required',
-    ),
-    'salutation' => array(
+    ],
+    'salutation' => [
         'title' => 'Salutation',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'telephone' => array(
+    ],
+    'telephone' => [
         'title' => 'Phone',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'gsm' => array(
+    ],
+    'gsm' => [
         'title' => 'Mobile',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'website' => array(
+    ],
+    'website' => [
         'title' => 'Website',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'country' => array(
+    ],
+    'country' => [
         'title' => 'Country',
         'required' => false,
         'type' => 'text',
         'description' => 'country code according to ISO 3166-1 alpha-2. For Belgium: "BE"',
-    ),
-    'zipcode' => array(
+    ],
+    'zipcode' => [
         'title' => 'Zip Code',
         'required' => false,
         'type' => 'number',
         'description' => '',
-    ),
-    'city' => array(
+    ],
+    'city' => [
         'title' => 'City',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'street' => array(
+    ],
+    'street' => [
         'title' => 'Street',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'number' => array(
+    ],
+    'number' => [
         'title' => 'Number',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'address_name_delivery' => array(
+    ],
+    'address_name_delivery' => [
         'title' => 'Delivery Address',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'zipcode_delivery' => array(
+    ],
+    'zipcode_delivery' => [
         'title' => 'Delivery Zip Code',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'city_delivery' => array(
+    ],
+    'city_delivery' => [
         'title' => 'Delivery City',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'street_delivery' => array(
+    ],
+    'street_delivery' => [
         'title' => 'Delivery Street',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'number_delivery' => array(
+    ],
+    'number_delivery' => [
         'title' => 'Delivery Number',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'address_name_visiting' => array(
+    ],
+    'address_name_visiting' => [
         'title' => 'Visiting Address',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'zipcode_visiting' => array(
+    ],
+    'zipcode_visiting' => [
         'title' => 'Visiting Zip Code',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'city_visiting' => array(
+    ],
+    'city_visiting' => [
         'title' => 'Visiting City',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'street_visiting' => array(
+    ],
+    'street_visiting' => [
         'title' => 'Visiting Street',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'number_visiting' => array(
+    ],
+    'number_visiting' => [
         'title' => 'Visiting Number',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'address_name_invoicing' => array(
+    ],
+    'address_name_invoicing' => [
         'title' => 'Invoicing Address',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'zipcode_invoicing' => array(
+    ],
+    'zipcode_invoicing' => [
         'title' => 'Invoicing Zip Code',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'city_invoicing' => array(
+    ],
+    'city_invoicing' => [
         'title' => 'Invoicing City',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'street_invoicing' => array(
+    ],
+    'street_invoicing' => [
         'title' => 'Invoicing Street',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'number_invoicing' => array(
+    ],
+    'number_invoicing' => [
         'title' => 'Invoicing Number',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'invoice_email_address' => array(
+    ],
+    'invoice_email_address' => [
         'title' => 'Invoice Email',
         'required' => false,
         'type' => 'text',
         'description' => '',
-    ),
-    'language' => array(
+    ],
+    'language' => [
         'title' => 'Language',
         'required' => false,
         'type' => 'text',
         'description' => 'language code according to ISO 639-1. For Dutch: "NL"',
-    ),
-    'gender' => array(
+    ],
+    'gender' => [
         'title' => 'Gender',
         'required' => false,
         'type' => 'text',
         'description' => 'M/F/U',
-    ),
-    'dob' => array(
+    ],
+    'dob' => [
         'title' => 'Date Of Birth',
         'required' => false,
         'type' => 'text',
         'description' => 'unix timestamp',
-    ),
-    'description' => array(
+    ],
+    'description' => [
         'title' => 'Description',
         'required' => false,
         'type' => 'textarea',
         'description' => 'background information on the contact',
-    ),
-    'newsletter' => array(
+    ],
+    'newsletter' => [
         'title' => 'Newsletter',
         'required' => false,
         'type' => 'boolean',
         'description' => '',
-    ),
-    'add_tag_by_string' => array(
+    ],
+    'add_tag_by_string' => [
         'title' => 'Add tag by string',
         'required' => false,
         'type' => 'text',
         'description' => 'pass one or more tags, comma-separated. Existing tags will be reused, other tags will be automatically created for you.',
-    ),
-    'automerge_by_name' => array(
+    ],
+    'automerge_by_name' => [
         'title' => 'Auto merge by name',
         'required' => false,
         'type' => 'boolean',
         'description' => 'If this flag is set to 1, Teamleader will merge this info into an existing contact with the same forename and surname, if it finds any. Default: 0',
-    ),
-    'automerge_by_email' => array(
+    ],
+    'automerge_by_email' => [
         'title' => 'Auto merge by email',
         'required' => false,
         'type' => 'boolean',
         'description' => 'If this flag is set to 1, Teamleader will merge this info into an existing contact with the same email address, if it finds any.',
-    ),
-    'tracking' => array(
+    ],
+    'tracking' => [
         'title' => 'Tracking',
         'required' => false,
         'type' => 'text',
         'description' => 'title of the activity',
-    ),
-    'tracking_long' => array(
+    ],
+    'tracking_long' => [
         'title' => 'Tracking Long',
         'required' => false,
         'type' => 'text',
         'description' => 'description of the activity',
-    ),
-);
+    ],
+];
