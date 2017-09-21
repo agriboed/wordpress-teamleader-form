@@ -1,39 +1,40 @@
 <div class="teamleader">
     <form method="post" action="options.php">
-        <h1><?php _e('Teamleader'); ?></h1>
+        <h1><?php _e('Teamleader', 'teamleader'); ?></h1>
 
         <?php settings_fields(self::$plugin_key); ?>
         <?php do_settings_sections(self::$plugin_key); ?>
 
         <div class="table">
             <div class="heading">
-                <?php _e('Plugin settings'); ?>
+                <?php _e('Plugin settings', 'teamleader'); ?>
             </div>
             <div class="body">
-                <?php _e('In order to <strong>connect your form</strong> to Teamleader with WordPress, you need to:'); ?>
+                <?php _e('In order to <strong>connect your form</strong> to Teamleader with WordPress, you need to:', 'teamleader'); ?>
                 <div class="installation">
                     <div class="step">
                         <span class="circle">1</span>
-                        <?php _e('Install the <a href="https://marketplace.teamleader.eu/eu/en/detail/teamleader/custom-form/eeb282" target="_blank">WordPress integration</a> on the Teamleader Marketplace'); ?>
+                        <?php _e('Install the <a href="https://marketplace.teamleader.eu/eu/en/detail/teamleader/custom-form/eeb282" target="_blank">WordPress integration</a> on the Teamleader Marketplace', 'teamleader'); ?>
                     </div>
                     <div class="step">
                         <span class="circle">2</span>
-                        <?php _e('<a href="https://marketplace.teamleader.eu/eu/en/manage/settings/eeb282" target="_blank">Go to the integrations settings</a> and <strong>connect a new form</strong>'); ?>
+                        <?php _e('<a href="https://marketplace.teamleader.eu/eu/en/manage/settings/eeb282" target="_blank">Go to the integrations settings</a> and <strong>connect a new form</strong>', 'teamleader'); ?>
                     </div>
                     <div class="step">
                         <span class="circle">3</span>
-                        <?php _e('After filling in the form, you\'ll see a <strong>Webhook URL</strong>. Copy this URL and paste it in the field below'); ?>
+                        <?php _e('After filling in the form, you\'ll see a <strong>Webhook URL</strong>. Copy this URL and paste it in the field below', 'teamleader'); ?>
 
                         <div class="webhook-field">
-                            <?php _e('Webhook URL'); ?>
+                            <?php _e('Webhook URL', 'teamleader'); ?>
                             <input type="text" value="<?php echo $this->getWebhook(); ?>" placeholder=""
                                    name="<?php echo self::$plugin_key; ?>_webhook">
-                            <input type="submit" class="button button-primary" value="Save">
+                            <input type="submit" class="button button-primary"
+                                   value="<?php _e('Save', 'teamleader'); ?>">
                         </div>
                     </div>
                     <div class="step">
                         <span class="circle">4</span>
-                        <?php _e('Add your form in any Wordpress page with the following <strong>shortcode</strong>:'); ?>
+                        <?php _e('Add your form in any Wordpress page with the following <strong>shortcode</strong>:', 'teamleader'); ?>
                         <div class="shortcode-container">
                         <span class="shortcode">
                             [teamleader]
@@ -44,25 +45,25 @@
             </div>
             <div class="bottom">
                 <span class="circle">?</span>
-                <?php _e('Read more about this process in the <a href="#">Teamleader Knowledge Base</a>'); ?>
+                <?php _e('Read more about this process in the <a href="http://support.teamleader.eu/" target="_blank">Teamleader Knowledge Base</a>', 'teamleader'); ?>
             </div>
         </div>
 
         <?php if (null !== $this->getWebhook()): ?>
             <div class="table">
                 <div class="heading">
-                    <?php _e('Form settings'); ?>
+                    <?php _e('Form settings', 'teamleader'); ?>
                 </div>
                 <div class="body">
                     <div class="step">
                         <label>
-                            <?php _e('Submit button text'); ?>
+                            <?php _e('Submit button text', 'teamleader'); ?>
                             <input type="text"
                                    name="<?php echo $form_name; ?>[submit]"
                                    value="<?php echo !empty($form['submit']) ? $form['submit'] : '' ?>">
                         </label>
                         <div class="description">
-                            Specify the label of the submit button
+                            <?php _e('Specify the label of the submit button', 'teamleader'); ?>
                         </div>
                     </div>
                     <div class="step">
@@ -73,11 +74,12 @@
                                    value="<?php echo !empty($form['success']) ? $form['success'] : '' ?>">
                         </label>
                         <div class="description">
-                            This is the text that is shown after the form has been successfully submitted
+                            <?php _e('This is the text that is shown after the form has been successfully submitted', 'teamleader'); ?>
                         </div>
                     </div>
                     <div class="step">
-                        <input type="submit" class="button button-primary" value="Publish changes">
+                        <input type="submit" class="button button-primary"
+                               value="<?php _e('Publish changes', 'teamleader'); ?>">
                     </div>
                 </div>
             </div>
@@ -104,43 +106,41 @@
                                 </div>
                             </div>
                             <div class="label">
-                                <?php _e('Field label'); ?>
+                                <?php _e('Field label', 'teamleader'); ?>
                                 <input type="text" placeholder="<?php echo $field['title'] ?>"
                                        name="<?php echo $fields_name . '[' . $key . ']'; ?>[label]"
                                        value="<?php echo isset($data[$key]['label']) ? $data[$key]['label'] : ''; ?>">
                             </div>
                             <div class="default">
-                                <?php if (true !== $field['required']):?>
-                                <?php _e('Default value'); ?>
-                                <input type="text" placeholder=""
-                                       name="<?php echo $fields_name . '[' . $key . ']'; ?>[default]"
-                                       value="<?php echo isset($data[$key]['default']) ? $data[$key]['default'] : ''; ?>">
-                                <?php endif;?>
+                                <?php if (true !== $field['required']): ?>
+                                    <?php _e('Default value', 'teamleader'); ?>
+                                    <input type="text" placeholder=""
+                                           name="<?php echo $fields_name . '[' . $key . ']'; ?>[default]"
+                                           value="<?php echo isset($data[$key]['default']) ? $data[$key]['default'] : ''; ?>">
+                                <?php endif; ?>
                             </div>
                             <div class="required">
-                                <?php if (true !== $field['required']):?>
-                                <?php _e('Required?'); ?>
-                                <div class="radio">
-                                    <label>
-                                        <input type="radio"
-                                               name="<?php echo $fields_name . '[' . $key . ']'; ?>[required]"
-                                            <?php echo isset($data[$key]['required']) ? 'checked' : ''; ?>
-                                        > Yes
-                                    </label>
-                                    <label>
-                                        <input type="radio"
-                                               name="<?php echo $fields_name . '[' . $key . ']'; ?>[required]"
-                                            <?php echo isset($data[$key]['required']) ? '' : 'checked'; ?>
-                                        > No
-                                    </label>
-                                </div>
-                                <?php endif;?>
+                                <?php if (true !== $field['required']): ?>
+                                    <?php _e('Required?', 'teamleader'); ?>
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio"
+                                                   name="<?php echo $fields_name . '[' . $key . ']'; ?>[required]"
+                                                <?php echo isset($data[$key]['required']) ? 'checked' : ''; ?>> Yes
+                                        </label>
+                                        <label>
+                                            <input type="radio"
+                                                   name="<?php echo $fields_name . '[' . $key . ']'; ?>[required]"
+                                                <?php echo isset($data[$key]['required']) ? '' : 'checked'; ?>> No
+                                        </label>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
-
                     <div class="bottom">
-                        <input type="submit" class="button button-primary" value="Publish changes">
+                        <input type="submit" class="button button-primary"
+                               value="<?php _e('Publish changes', 'teamleader'); ?>">
                     </div>
                 </div>
             </div>

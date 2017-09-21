@@ -35,9 +35,8 @@
             <?php
         }
         ?>
-
-        <div class="powered">Powered by Teamleader <img src="<?php echo $logo; ?>" alt="Teamleader"></div>
-
+        <div class="powered">Powered by <a href="https://www.teamleader.eu/" target="_blank">Teamleader</a><img
+                    src="<?php echo $logo; ?>" alt="Teamleader"></div>
         <button type="submit" class="btn btn-primary"><?php echo $form['submit']; ?></button>
     </form>
     <div data-result></div>
@@ -72,37 +71,3 @@
         });
     })(jQuery);
 </script>
-<style>
-    .teamleader-container label {
-        font-weight: 400;
-    }
-
-    .teamleader-container .form-control {
-        padding: 5px 10px;
-        margin-top: 5px;
-        border: 2px solid #e9e9e9;
-    }
-
-    .teamleader-container .form-group {
-        margin-bottom: 20px;
-    }
-
-    .teamleader-container button[type=submit] {
-        padding: 5px 20px;
-        text-transform: uppercase;
-        font-weight: 500;
-        background: #18aaa7;
-        margin-top: 5px;
-    }
-
-    .teamleader-container .powered {
-        text-align: right;
-        font-size: 0.7em;
-        color: #c3c3c3;
-    }
-
-    .teamleader-container .powered img {
-        top: 2px;
-        position: relative;
-    }
-</style>
