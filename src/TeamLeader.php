@@ -1,14 +1,8 @@
 <?php
-/**
- * Author: AGriboed (c) 2017
- *
- * alexv1rs@gmail.com
- * http://v1rus.ru
- **/
 
-namespace TeamLeader;
+namespace Teamleader;
 
-class TeamLeader
+class Teamleader
 {
     protected static $plugin_key = 'teamleader';
     protected $basename;
@@ -58,7 +52,8 @@ class TeamLeader
      */
     public function renderOptionsPage()
     {
-        wp_enqueue_style(self::$plugin_key, plugin_dir_url($this->basename) . '/src/assets/css/styles.css');
+        wp_enqueue_style(self::$plugin_key . '-styles', plugin_dir_url($this->basename) . 'src/assets/css/styles.css');
+        wp_enqueue_style(self::$plugin_key . '-admin', plugin_dir_url($this->basename) . 'src/assets/css/admin.css');
 
         $form = $this->getOptionForm();
         $data = $this->getOptionFields();
@@ -66,41 +61,6 @@ class TeamLeader
         $fields_name = self::$plugin_key . '_fields';
 
         require __DIR__ . '/templates/options.php';
-    }
-
-    /**
-     * Process shortcode
-     *
-     * @param mixed $atts
-     * @return string
-     */
-    public function shortcodeHandler($atts = [])
-    {
-        $atts = shortcode_atts([], $atts);
-
-        if (null === $this->getWebhook()) {
-            return '';
-        }
-
-        $form = $this->getOptionForm();
-        $fields = $this->getFields();
-        $fields_options = $this->getOptionFields();
-
-        $form['submit'] = !empty($form['submit']) ? $form['submit'] : __('Submit');
-        $form['success'] = !empty($form['success']) ? $form['success'] : __('Thank you!');
-
-        $logo = plugin_dir_url($this->basename) . 'src/assets/images/logo.png';
-
-        if (file_exists(get_template_directory() . '/teamleader/frontend.php')) {
-            $path = get_template_directory() . '/teamleader/frontend.php';
-        } else {
-            $path = __DIR__ . '/templates/frontend.php';
-        }
-
-        ob_start();
-        include $path;
-
-        return ob_get_clean();
     }
 
     /**
@@ -127,7 +87,6 @@ class TeamLeader
         return get_option(self::$plugin_key . '_fields', array());
     }
 
-
     /**
      * @return array
      */
@@ -136,6 +95,44 @@ class TeamLeader
         $this->fields = require __DIR__ . '/fields/fields.php';
 
         return $this->fields;
+    }
+
+    /**
+     * Process shortcode
+     *
+     * @param mixed $atts
+     * @return string
+     */
+    public function shortcodeHandler($atts = [])
+    {
+        $atts = shortcode_atts([], $atts);
+
+        if (null === $this->getWebhook()) {
+            return '';
+        }
+
+        wp_enqueue_script('jquery');
+        wp_enqueue_style(self::$plugin_key . '-styles', plugin_dir_url($this->basename) . 'src/assets/css/styles.css');
+
+        $form = $this->getOptionForm();
+        $fields = $this->getFields();
+        $fields_options = $this->getOptionFields();
+
+        $form['submit'] = !empty($form['submit']) ? $form['submit'] : __('Submit');
+        $form['success'] = !empty($form['success']) ? $form['success'] : __('Thank you!');
+
+        $logo = plugin_dir_url($this->basename) . 'src/assets/images/logo.png';
+
+        if (file_exists(get_template_directory() . '/teamleader/frontend.php')) {
+            $path = get_template_directory() . '/teamleader/frontend.php';
+        } else {
+            $path = __DIR__ . '/templates/frontend.php';
+        }
+
+        ob_start();
+        include $path;
+
+        return ob_get_clean();
     }
 
     /**
@@ -173,6 +170,7 @@ class TeamLeader
         ]);
 
         wp_die();
+
         return null;
     }
 
@@ -181,7 +179,7 @@ class TeamLeader
      * @return mixed
      * @throws \RuntimeException
      */
-    private function request(array $fields = array())
+    protected function request(array $fields = array())
     {
         $webhook = $this->getWebhook();
 
@@ -200,7 +198,6 @@ class TeamLeader
 
         $response = curl_exec($curl);
         $headers = curl_getinfo($curl);
-
         $errorNumber = curl_errno($curl);
         $errorMessage = curl_error($curl);
 

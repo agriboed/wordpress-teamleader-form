@@ -87,4 +87,11 @@ return [
         'type' => 'text',
         'description' => 'KVK (The Netherlands only)',
     ],
+    'remarks' => [
+        'title' => 'Remarks',
+        'required' => false,
+        'type' => 'textarea',
+        'description' => '',
+    ],
+
 ];

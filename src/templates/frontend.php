@@ -44,7 +44,7 @@
 <script>
     (function ($) {
         $(document).ready(function () {
-            let container = $('.teamleader-container'),
+            var container = $('.teamleader-container'),
                 form = container.find('form'),
                 result = container.find('[data-result]'),
                 data;
