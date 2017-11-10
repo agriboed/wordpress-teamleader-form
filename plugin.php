@@ -8,7 +8,7 @@
  */
 
 if (!class_exists(\Teamleader\Teamleader::class)) {
-    require __DIR__ . '/src/Teamleader.php';
+    require __DIR__ . '/src/TeamLeader.php';
 
     new Teamleader\Teamleader(__FILE__);
 }
