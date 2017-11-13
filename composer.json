@@ -1,0 +1,18 @@
+{
+  "name": "agriboed/teamleader",
+  "authors": [
+    {
+      "name": "AGriboed",
+      "email": "alexv1rs@gmail.com"
+    }
+  ],
+  "require": {
+    "curl/curl": "^1.8",
+    "google/recaptcha": "~1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Teamleader\\": "src/"
+    }
+  }
+}

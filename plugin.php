@@ -4,11 +4,17 @@
  * Description: Plugin shows form on your website and allows to send data into CRM
  * Author: AGriboed <alexv1rs@gmail.com>
  * Author URI: http://v1rus.ru/
- * Version: 1.1.2
+ * Version: 1.2.0
  */
 
-if (!class_exists(\Teamleader\Teamleader::class)) {
-    require __DIR__ . '/src/TeamLeader.php';
+require 'vendor/autoload.php';
 
-    new Teamleader\Teamleader(__FILE__);
-}
+$dependencies = array(
+    \Teamleader\Controllers\Admin::class,
+    \Teamleader\Controllers\AjaxHandler::class,
+    \Teamleader\Controllers\Frontend::class,
+    \Teamleader\Helpers\Options::class,
+    \Teamleader\Helpers\Fields::class
+);
+
+new \Teamleader\DependencyInjection\Container('teamleader', __FILE__, $dependencies);

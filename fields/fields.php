@@ -1,6 +1,6 @@
 <?php
 /**
- * see http://support.teamleader.eu/topics/119-available-fields-for-web2leads/
+ * See more information here http://support.teamleader.eu/topics/119-available-fields-for-web2leads/
  */
 return [
     'forename' => [
