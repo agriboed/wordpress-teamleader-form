@@ -1,4 +1,8 @@
 <?php
+/**
+ * Copyright (c) 2017 by AGriboed <alexv1rs@gmail.com>
+ * https://v1rus.ru/
+ */
 
 namespace Teamleader\Controllers;
 
@@ -18,9 +22,25 @@ class Admin implements DependencyInterface, HooksInterface
      * @var Container
      */
     protected $container;
+
+    /**
+     * @var string
+     */
     protected $key;
+
+    /**
+     * @var string
+     */
     protected $basename;
+
+    /**
+     * @var string
+     */
     protected $plugin_dir;
+
+    /**
+     * @var string
+     */
     protected $plugin_dir_url;
 
     /**
@@ -52,6 +72,10 @@ class Admin implements DependencyInterface, HooksInterface
             ];
 
             return array_merge($links, $link);
+        });
+
+        add_action('plugins_loaded', function () {
+            load_plugin_textdomain($this->key, false, $this->plugin_dir . '/languages');
         });
     }
 

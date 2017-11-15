@@ -72,7 +72,6 @@
 
             form.submit(function (e) {
                 e.preventDefault();
-
                 <?php if (empty($form['recaptcha'])): ?>
                 submitData();
                 <?php endif;?>
@@ -103,7 +102,23 @@
             }, 10000);
         },
         submitData = function () {
-            var data = 'action=teamleader&' + form.serialize();
+            var data = 'action=teamleader&' + form.serialize(),
+                has_error = false;
+
+            form.find('input').each(function () {
+                var input = jQuery(this);
+
+                if (input.prop('required') && input.val().length === 0) {
+                    input.addClass('invalid');
+                    has_error = true;
+                } else {
+                    input.removeClass('invalid');
+                }
+            });
+
+            if (has_error) {
+                return;
+            }
 
             jQuery.ajax({
                 method: 'POST',
@@ -122,6 +137,7 @@
             });
         },
         checkRecaptcha = function (token) {
+
             submitData();
         };
 
