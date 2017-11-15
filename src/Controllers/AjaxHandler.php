@@ -1,4 +1,8 @@
 <?php
+/**
+ * Copyright (c) 2017 by AGriboed <alexv1rs@gmail.com>
+ * https://v1rus.ru/
+ */
 
 namespace Teamleader\Controllers;
 
@@ -31,6 +35,10 @@ class AjaxHandler implements DependencyInterface, HooksInterface
      */
     protected $basename;
 
+    /**
+     * AjaxHandler constructor.
+     * @param Container $container
+     */
     public function __construct(Container $container)
     {
         $this->container = $container;

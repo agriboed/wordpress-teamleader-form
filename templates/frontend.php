@@ -36,7 +36,9 @@
         }
         ?>
         <?php if (!empty($form['logo'])): ?>
-            <div class="teamleader-powered"><?php _e('Powered by <a href="https://www.teamleader.eu/" target="_blank">Teamleader</a>', 'teamleader'); ?>
+            <div class="teamleader-powered"><?php _e('Powered by', 'teamleader'); ?>
+                <a href="http://referral.teamleader.eu/en?token=<?php echo (!empty($form['referral_token'])) ? $form['referral_token'] : 'refferal'; ?>"
+                   target="_blank">Teamleader</a>
                 <img src="<?php echo $logo; ?>" alt="<?php _e('Teamleader', 'teamleader'); ?>"></div>
         <?php endif; ?>
 

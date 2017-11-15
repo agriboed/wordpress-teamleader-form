@@ -14,7 +14,7 @@
                 <div class="installation">
                     <div class="step">
                         <span class="circle">1</span>
-                        <?php _e('Install the <a href="https://app.teamleader.eu/contact_detail.php?id=18128209" target="_blank">WordPress integration</a> on the Teamleader Marketplace', $data['key']); ?>
+                        <?php _e('Install the WordPress integration from the Teamleader Marketplace or Wordpress repository', $data['key']); ?>
                     </div>
                     <div class="step">
                         <span class="circle">2</span>
@@ -81,10 +81,24 @@
                         <label>
                             <?php _e('Show Teamleader logo in the footer', $data['key']); ?>
                             <input type="checkbox"
+                                   id="teamleader_logo"
                                    name="<?php echo $data['form_name']; ?>[logo]"
                                    value="1" <?php echo !empty($data['form_options']['logo']) ? 'checked' : '' ?>>
                         </label>
                         <div class="description">
+                            <?php _e('Say thanks for providing this free plugin and earn extra money with refferal program.', $data['key']); ?>
+                        </div>
+                    </div>
+                    <div class="step teamleader_logo-container"
+                         <?php if (empty($data['form_options']['logo'])): ?>style="display: none"<?php endif; ?>>
+                        <label>
+                            <?php _e('Referral token', $data['key']); ?>
+                            <input type="text"
+                                   name="<?php echo $data['form_name']; ?>[referral_token]"
+                                   value="<?php echo !empty($data['form_options']['referral_token']) ? $data['form_options']['referral_token'] : '' ?>">
+                        </label>
+                        <div class="description">
+                            <?php _e('To know Your personal referral token go to: <a href="https://app.teamleader.eu/referrals.php" target="_blank">Teamleader.eu</a>', $data['key']); ?>
                         </div>
                     </div>
                     <div class="step">
@@ -99,7 +113,7 @@
                             <?php _e('See more information and keys on <a href="https://www.google.com/recaptcha/admin#list" target=_blank">the official google website</a>.', $data['key']); ?>
                         </div>
                     </div>
-                    <div class="step recaptcha-container"
+                    <div class="step teamleader_recaptcha-container"
                          <?php if (empty($data['form_options']['recaptcha'])): ?>style="display: none"<?php endif; ?>>
                         <label>
                             <?php _e('Site key', $data['key']); ?>
@@ -110,7 +124,7 @@
                         <div class="description">
                         </div>
                     </div>
-                    <div class="step recaptcha-container"
+                    <div class="step teamleader_recaptcha-container"
                          <?php if (empty($data['form_options']['recaptcha'])): ?>style="display: none"<?php endif; ?>>
                         <label>
                             <?php _e('Secret key', $data['key']); ?>
@@ -171,13 +185,13 @@
                                             <input type="radio"
                                                    name="<?php echo $data['fields_name'] . '[' . $key . ']'; ?>[required]"
                                                 <?php echo isset($data['fields_options'][$key]['required']) ? 'checked' : ''; ?>>
-                                            <?php _e('Yes', $data['key']);?>
+                                            <?php _e('Yes', $data['key']); ?>
                                         </label>
                                         <label>
                                             <input type="radio"
                                                    name="<?php echo $data['fields_name'] . '[' . $key . ']'; ?>[required]"
                                                 <?php echo isset($data['fields_options'][$key]['required']) ? '' : 'checked'; ?>>
-                                            <?php _e('No', $data['key']);?>
+                                            <?php _e('No', $data['key']); ?>
                                         </label>
                                     </div>
                                 <?php endif; ?>
@@ -196,7 +210,10 @@
         (function ($) {
             $(document).ready(function () {
                 var active = $('.active input[type=checkbox]'),
-                    recaptcha = $('#teamleader_recaptcha');
+                    logo = $('#teamleader_logo'),
+                    logo_container = $('.teamleader_logo-container'),
+                    recaptcha = $('#teamleader_recaptcha'),
+                    recaptcha_container = $('.teamleader_recaptcha-container');
 
                 active.click(function () {
                     if ($(this).attr('checked')) {
@@ -207,14 +224,15 @@
                     }
                 });
 
-                recaptcha.click(function () {
-                    if ($(this).attr('checked')) {
-                        $('.recaptcha-container').show();
-                    }
-                    else {
-                        $('.recaptcha-container').hide();
-                    }
+                logo.click(function () {
+                    logo_container.toggle();
                 });
+
+                recaptcha.click(function () {
+                    recaptcha_container.toggle();
+                });
+
+
             });
         })(jQuery);
     </script>
