@@ -6,7 +6,6 @@
 
 namespace Teamleader\Controllers;
 
-
 use Teamleader\Helpers\FieldsHelper;
 use Teamleader\Interfaces\HooksInterface;
 use Teamleader\DependencyInjection\Container;
@@ -28,6 +27,7 @@ class FrontendController extends AbstractController implements HooksInterface
 
     /**
      * @param array $atts
+     *
      * @return string
      * @throws \Exception
      */
@@ -68,15 +68,15 @@ class FrontendController extends AbstractController implements HooksInterface
 
         $form = $optionsHelper->getForm();
 
-        if (!empty($form['recaptcha'])) {
+        if ( ! empty($form['recaptcha'])) {
             wp_enqueue_script('google-api', 'https://www.google.com/recaptcha/api.js', [], true);
         }
 
-        $fields = $fieldsHelper->getFields();
+        $fields         = $fieldsHelper->getFields();
         $fields_options = $optionsHelper->getFields();
 
-        $form['submit'] = !empty($form['submit']) ? $form['submit'] : __('Submit', Container::key());
-        $form['success'] = !empty($form['success']) ? $form['success'] : __('Thank you!', Container::key());
+        $form['submit']  = ! empty($form['submit']) ? $form['submit'] : __('Submit', Container::key());
+        $form['success'] = ! empty($form['success']) ? $form['success'] : __('Thank you!', Container::key());
 
         $logo = Container::pluginUrl() . 'assets/images/logo.png';
 
@@ -87,7 +87,7 @@ class FrontendController extends AbstractController implements HooksInterface
             $path = Container::pluginDir() . '/templates/frontend.php';
         }
 
-        if (!file_exists($path)) {
+        if ( ! file_exists($path)) {
             throw new \LogicException('Frontend template not found');
         }
 

@@ -38,13 +38,15 @@ class AdminController extends AbstractController implements HooksInterface
     public function initHooks()
     {
         add_action('admin_menu', function () {
-            add_submenu_page('options-general.php', __('Teamleader', Container::key()), __('Teamleader', Container::key()),
+            add_submenu_page('options-general.php', __('Teamleader', Container::key()),
+                __('Teamleader', Container::key()),
                 'manage_options', Container::key(), [$this, 'renderOptionsPage']);
         });
 
         add_filter('plugin_action_links_' . Container::basename(), function ($links) {
             $link = [
-                '<a href="' . admin_url('options-general.php?page=' . Container::key()) . '">' . __('Settings', Container::key()) . '</a>',
+                '<a href="' . admin_url('options-general.php?page=' . Container::key()) . '">' . __('Settings',
+                    Container::key()) . '</a>',
             ];
 
             return array_merge($links, $link);
@@ -77,16 +79,16 @@ class AdminController extends AbstractController implements HooksInterface
         $fieldsHelper = $this->container->get(FieldsHelper::class);
 
         $data = [
-            'key' => Container::key(),
-            'form_options' => $optionsHelper->getForm(),
-            'webhook' => $optionsHelper->getWebhook(),
+            'key'            => Container::key(),
+            'form_options'   => $optionsHelper->getForm(),
+            'webhook'        => $optionsHelper->getWebhook(),
             'fields_options' => $optionsHelper->getFields(),
-            'form_name' => $optionsHelper->getFormKey(),
-            'fields_name' => $optionsHelper->getFieldsKey(),
-            'fields' => $fieldsHelper->getFields()
+            'form_name'      => $optionsHelper->getFormKey(),
+            'fields_name'    => $optionsHelper->getFieldsKey(),
+            'fields'         => $fieldsHelper->getFields(),
         ];
 
-        if (!file_exists(Container::pluginDir() . '/templates/options.php')) {
+        if ( ! file_exists(Container::pluginDir() . '/templates/options.php')) {
             throw new \LogicException('Options template not found');
         }
 

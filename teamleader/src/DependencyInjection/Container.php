@@ -1,7 +1,10 @@
 <?php
+/**
+ * Copyright (c) 2017 by AGriboed <alexv1rs@gmail.com>
+ * https://v1rus.ru/
+ */
 
 namespace Teamleader\DependencyInjection;
-
 
 use Teamleader\Interfaces\DependencyInterface;
 

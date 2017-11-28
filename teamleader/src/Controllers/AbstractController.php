@@ -6,7 +6,6 @@
 
 namespace Teamleader\Controllers;
 
-
 use Teamleader\DependencyInjection\Container;
 use Teamleader\Interfaces\DependencyInterface;
 

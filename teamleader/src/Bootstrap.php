@@ -6,7 +6,6 @@
 
 namespace Teamleader;
 
-
 use Teamleader\DependencyInjection\Container;
 use Teamleader\Interfaces\DependencyInterface;
 use Teamleader\Interfaces\HooksInterface;
@@ -35,11 +34,12 @@ class Bootstrap
         \Teamleader\Controllers\AjaxController::class,
         \Teamleader\Controllers\FrontendController::class,
         \Teamleader\Helpers\OptionsHelper::class,
-        \Teamleader\Helpers\FieldsHelper::class
+        \Teamleader\Helpers\FieldsHelper::class,
     );
 
     /**
      * Bootstrap constructor.
+     *
      * @param $plugin
      */
     public function __construct($plugin)

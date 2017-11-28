@@ -37,12 +37,12 @@ class AjaxController extends AbstractController implements HooksInterface
          * @var $optionsHelper OptionsHelper
          */
         $optionsHelper = $this->container->get(OptionsHelper::class);
-        $data = $this->processFields();
-        $formOptions = $optionsHelper->getForm();
+        $data          = $this->processFields();
+        $formOptions   = $optionsHelper->getForm();
 
-        if (!empty($formOptions['recaptcha'] && !empty($formOptions['recaptcha_secret_key']))) {
+        if ( ! empty($formOptions['recaptcha'] && ! empty($formOptions['recaptcha_secret_key']))) {
             $recaptcha = new ReCaptcha($formOptions['recaptcha_secret_key']);
-            $resp = $recaptcha->verify($_POST['g-recaptcha-response']);
+            $resp      = $recaptcha->verify($_POST['g-recaptcha-response']);
 
             if (false === $resp->isSuccess()) {
                 $this->setResponse(false, $resp->getErrorCodes());
@@ -79,15 +79,15 @@ class AjaxController extends AbstractController implements HooksInterface
         /**
          * @var $fieldsHelper FieldsHelper
          */
-        $fieldsHelper = $this->container->get(FieldsHelper::class);
-        $fields = $fieldsHelper->getFields();
+        $fieldsHelper   = $this->container->get(FieldsHelper::class);
+        $fields         = $fieldsHelper->getFields();
         $fields_options = $optionsHelper->getFields();
 
         $data = [];
 
         foreach ($fields as $key => $field) {
-            $value = isset($_POST['data'][$key]) ? $_POST['data'][$key] : null;
-            $data[$key] = !empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : $value;
+            $value      = isset($_POST['data'][$key]) ? $_POST['data'][$key] : null;
+            $data[$key] = ! empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : $value;
         }
 
         return $data;

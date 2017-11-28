@@ -6,7 +6,6 @@
 
 namespace Teamleader\Helpers;
 
-
 use Teamleader\DependencyInjection\Container;
 use Teamleader\Interfaces\DependencyInterface;
 

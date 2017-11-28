@@ -27,6 +27,7 @@ class FieldsHelper implements DependencyInterface
 
     /**
      * Fields constructor.
+     *
      * @param Container $container
      */
     public function setContainer(Container $container)
@@ -43,7 +44,7 @@ class FieldsHelper implements DependencyInterface
     {
         if (null === $this->fields) {
 
-            if (!file_exists(Container::pluginDir() . '/fields/fields.php')) {
+            if ( ! file_exists(Container::pluginDir() . '/fields/fields.php')) {
                 throw new \LogicException('Fields file not found');
             }
 

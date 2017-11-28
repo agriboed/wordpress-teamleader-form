@@ -6,10 +6,8 @@
 
 namespace Teamleader\Helpers;
 
-
 use Teamleader\DependencyInjection\Container;
 use Teamleader\Interfaces\HooksInterface;
-
 
 /**
  * Class Options
