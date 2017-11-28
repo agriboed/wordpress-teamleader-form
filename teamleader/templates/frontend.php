@@ -137,7 +137,6 @@
             });
         },
         checkRecaptcha = function (token) {
-
             submitData();
         };
 
