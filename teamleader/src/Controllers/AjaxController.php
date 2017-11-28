@@ -7,9 +7,8 @@
 namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Helpers\Fields;
-use Teamleader\Helpers\Options;
-use Teamleader\Interfaces\DependencyInterface;
+use Teamleader\Helpers\FieldsHelper;
+use Teamleader\Helpers\OptionsHelper;
 use Teamleader\Interfaces\HooksInterface;
 use Curl\Curl;
 use ReCaptcha\ReCaptcha;
@@ -18,52 +17,27 @@ use ReCaptcha\ReCaptcha;
  * Class AjaxHandler
  * @package Teamleader\Controllers
  */
-class AjaxHandler implements DependencyInterface, HooksInterface
+class AjaxController extends AbstractController implements HooksInterface
 {
-    /**
-     * @var Container
-     */
-    protected $container;
-
-    /**
-     * @var string
-     */
-    protected $key;
-
-    /**
-     * @var string
-     */
-    protected $basename;
-
-    /**
-     * AjaxHandler constructor.
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-        $this->key = $container::getKey();
-        $this->basename = $container::getBasename();
-    }
-
     /**
      * Set Wordpress hooks
      */
     public function initHooks()
     {
-        add_action('wp_ajax_' . $this->key, [$this, 'ajaxHandler']);
-        add_action('wp_ajax_nopriv_' . $this->key, [$this, 'ajaxHandler']);
+        add_action('wp_ajax_' . Container::key(), [$this, 'ajaxHandler']);
+        add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'ajaxHandler']);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function ajaxHandler()
     {
         /**
-         * @var $optionsHelper Options
+         * @var $optionsHelper OptionsHelper
          */
-        $optionsHelper = $this->container->getContainer(Options::class);
-
+        $optionsHelper = $this->container->get(OptionsHelper::class);
         $data = $this->processFields();
-
         $formOptions = $optionsHelper->getForm();
 
         if (!empty($formOptions['recaptcha'] && !empty($formOptions['recaptcha_secret_key']))) {
@@ -88,25 +62,24 @@ class AjaxHandler implements DependencyInterface, HooksInterface
         $this->setResponse(true);
 
         wp_die();
-
-        return null;
     }
 
     /**
      * @return array
+     * @throws \Exception
      * @throws \LogicException
      */
     protected function processFields()
     {
         /**
-         * @var $optionsHelper Options
+         * @var $optionsHelper OptionsHelper
          */
-        $optionsHelper = $this->container->getContainer(Options::class);
+        $optionsHelper = $this->container->get(OptionsHelper::class);
 
         /**
-         * @var $fieldsHelper Fields
+         * @var $fieldsHelper FieldsHelper
          */
-        $fieldsHelper = $this->container->getContainer(Fields::class);
+        $fieldsHelper = $this->container->get(FieldsHelper::class);
         $fields = $fieldsHelper->getFields();
         $fields_options = $optionsHelper->getFields();
 

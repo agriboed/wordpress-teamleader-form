@@ -13,17 +13,12 @@ use Teamleader\Interfaces\DependencyInterface;
  * Class Fields
  * @package Teamleader\Helpers
  */
-class Fields implements DependencyInterface
+class FieldsHelper implements DependencyInterface
 {
     /**
      * @var Container
      */
     protected $container;
-
-    /**
-     * @var string
-     */
-    protected $plugin_dir;
 
     /**
      * @var array
@@ -34,10 +29,9 @@ class Fields implements DependencyInterface
      * Fields constructor.
      * @param Container $container
      */
-    public function __construct(Container $container)
+    public function setContainer(Container $container)
     {
         $this->container = $container;
-        $this->plugin_dir = $container::getPluginDir();
     }
 
     /**
@@ -49,11 +43,11 @@ class Fields implements DependencyInterface
     {
         if (null === $this->fields) {
 
-            if (!file_exists($this->plugin_dir . '/fields/fields.php')) {
+            if (!file_exists(Container::pluginDir() . '/fields/fields.php')) {
                 throw new \LogicException('Fields file not found');
             }
 
-            $this->fields = require $this->plugin_dir . '/fields/fields.php';
+            $this->fields = require Container::pluginDir() . '/fields/fields.php';
         }
 
         return $this->fields;

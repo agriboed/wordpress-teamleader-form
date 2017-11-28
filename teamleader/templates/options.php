@@ -78,6 +78,7 @@
                         </div>
                     </div>
                     <div class="step">
+                        <h3><?php _e('Refferal settings', $data['key']); ?></h3>
                         <label>
                             <?php _e('Show Teamleader logo in the footer', $data['key']); ?>
                             <input type="checkbox"
@@ -102,6 +103,7 @@
                         </div>
                     </div>
                     <div class="step">
+                        <h3><?php _e('Recaptcha settings', $data['key']); ?></h3>
                         <label>
                             <?php _e('Enable Google Invisible reCAPTCHA', $data['key']); ?>
                             <input type="checkbox"

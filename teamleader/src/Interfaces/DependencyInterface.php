@@ -14,5 +14,5 @@ use Teamleader\DependencyInjection\Container;
  */
 interface DependencyInterface
 {
-    public function __construct(Container $container);
+    public function setContainer(Container $container);
 }
