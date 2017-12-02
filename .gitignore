@@ -1,1 +1,5 @@
 .idea/
+node_modules/
+teamleader/assets/css/
+teamleader/assets/js/
+teamleader/assets/images

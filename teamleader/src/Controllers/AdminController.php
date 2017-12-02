@@ -7,9 +7,9 @@
 namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Helpers\FieldsHelper;
 use Teamleader\Interfaces\HooksInterface;
 use Teamleader\Helpers\OptionsHelper;
+use Teamleader\Helpers\FieldsHelper;
 
 /**
  * Class Admin
@@ -65,8 +65,9 @@ class AdminController extends AbstractController implements HooksInterface
      */
     public function renderOptionsPage()
     {
-        wp_enqueue_style(Container::key() . '-styles', Container::pluginUrl() . 'assets/css/styles.css');
+        wp_enqueue_style(Container::key() . '-styles', Container::pluginUrl() . 'assets/css/styles.css', null, Container::version());
         wp_enqueue_style(Container::key() . '-admin', Container::pluginUrl() . 'assets/css/admin.css');
+        wp_enqueue_script(Container::key() . '-admin', Container::pluginUrl() . 'assets/js/app.js', array('jquery'), Container::version());
 
         /**
          * @var $optionsHelper OptionsHelper
@@ -79,16 +80,16 @@ class AdminController extends AbstractController implements HooksInterface
         $fieldsHelper = $this->container->get(FieldsHelper::class);
 
         $data = [
-            'key'            => Container::key(),
-            'form_options'   => $optionsHelper->getForm(),
-            'webhook'        => $optionsHelper->getWebhook(),
+            'key' => Container::key(),
+            'form_options' => $optionsHelper->getForm(),
+            'webhook' => $optionsHelper->getWebhook(),
             'fields_options' => $optionsHelper->getFields(),
-            'form_name'      => $optionsHelper->getFormKey(),
-            'fields_name'    => $optionsHelper->getFieldsKey(),
-            'fields'         => $fieldsHelper->getFields(),
+            'form_name' => $optionsHelper->getFormKey(),
+            'fields_name' => $optionsHelper->getFieldsKey(),
+            'fields' => $fieldsHelper->getFields(),
         ];
 
-        if ( ! file_exists(Container::pluginDir() . '/templates/options.php')) {
+        if (!file_exists(Container::pluginDir() . '/templates/options.php')) {
             throw new \LogicException('Options template not found');
         }
 

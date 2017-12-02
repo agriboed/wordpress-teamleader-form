@@ -1,0 +1,58 @@
+.teamleader-container label {
+  font-weight: 400;
+}
+
+.teamleader-container .form-control {
+  padding: 5px 10px;
+  margin-top: 5px;
+  border: 2px solid #e9e9e9;
+}
+
+.teamleader-container .form-group {
+  margin-bottom: 20px;
+}
+
+.teamleader-container input.invalid {
+  border: 3px solid #ff9b9b;
+}
+
+.teamleader-submit {
+  padding: 5px 20px;
+  text-transform: uppercase;
+  font-weight: 500;
+  background: #18aaa7;
+  margin-top: 5px;
+}
+
+.teamleader-powered {
+  text-align: right;
+  font-size: 0.7em;
+  color: #c3c3c3;
+}
+
+.teamleader-powered a {
+  text-decoration: none;
+  color: #c3c3c3;
+  box-shadow: none;
+}
+
+.teamleader-powered img {
+  top: 2px;
+  position: relative;
+}
+
+.teamleader-success {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #18aaa7;
+  color: #18aaa7;
+  font-weight: bold;
+}
+
+.teamleader-error {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #e87979;
+  color: #c74c4c;
+  font-weight: bold;
+}

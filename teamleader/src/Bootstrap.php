@@ -22,6 +22,11 @@ class Bootstrap
     protected $key = 'teamleader';
 
     /**
+     * @var string
+     */
+    protected $version = '1.3.0';
+
+    /**
      * @var $container Container
      */
     protected $container;
@@ -44,7 +49,7 @@ class Bootstrap
      */
     public function __construct($plugin)
     {
-        $this->container = new Container($plugin, $this->key);
+        $this->container = new Container($plugin, $this->key, $this->version);
 
         foreach ($this->autostart as $class) {
             $object = new $class;

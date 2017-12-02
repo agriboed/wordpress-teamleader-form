@@ -45,7 +45,7 @@ class FrontendController extends AbstractController implements HooksInterface
         }
 
         wp_enqueue_script('jquery');
-        wp_enqueue_style(Container::key() . '-styles', Container::pluginUrl() . 'assets/css/styles.css');
+        wp_enqueue_style(Container::key() . '-styles', Container::pluginUrl() . 'assets/css/front.css');
 
         return $this->renderForm();
     }

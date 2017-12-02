@@ -18,12 +18,17 @@ class Container
      * @var array
      *
      */
-    protected $dependencies;
+    protected $dependencies = array();
 
     /**
      * @var string
      */
     protected static $key;
+
+    /**
+     * @var string
+     */
+    protected static $version;
 
     /**
      * @var string
@@ -42,23 +47,34 @@ class Container
 
     /**
      * Container constructor.
+     *
      * @param $plugin
      * @param $key
+     * @param $version
      */
-    public function __construct($plugin, $key)
+    public function __construct($plugin, $key, $version)
     {
         static::$key = $key;
+        static::$version = $version;
         static::$basename = basename($plugin);
         static::$plugin_dir = plugin_dir_path($plugin);
         static::$plugin_url = plugin_dir_url($plugin);
     }
 
     /**
-     * @return null|string
+     * @return string
      */
     public static function key()
     {
         return static::$key;
+    }
+
+    /**
+     * @return string
+     */
+    public static function version()
+    {
+        return static::$version;
     }
 
     /**
