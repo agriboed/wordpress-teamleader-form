@@ -7,69 +7,35 @@
 namespace Teamleader\Helpers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Interfaces\HooksInterface;
 
 /**
  * Class Options
  * @package Teamleader\Helpers
  */
-class OptionsHelper extends AbstractHelper implements HooksInterface
+class OptionsHelper
 {
-    /**
-     * Set Wordpress hooks
-     */
-    public function initHooks()
-    {
-        register_setting(Container::key(), Container::key() . '_webhook');
-        register_setting(Container::key(), Container::key() . '_form');
-        register_setting(Container::key(), Container::key() . '_fields');
-    }
-
     /**
      * @return string|null
      */
-    public function getWebhook()
+    public static function getOptions()
     {
-        return get_option(Container::key() . '_webhook', null);
-    }
-
-    /**
-     * @return string
-     */
-    public function getWebhookKey()
-    {
-        return Container::key() . '_webhook';
+        return get_option(Container::key() . '_options', []);
     }
 
     /**
      * @return array
      */
-    public function getForm()
+    public static function getForms()
     {
-        return get_option(Container::key() . '_form', []);
+        return get_option(Container::key() . '_forms', []);
     }
 
     /**
-     * @return string
+     * @param array $options
+     * @return bool
      */
-    public function getFormKey()
+    public static function setOptions(array $options)
     {
-        return Container::key() . '_form';
-    }
-
-    /**
-     * @return array
-     */
-    public function getFields()
-    {
-        return get_option(Container::key() . '_fields', []);
-    }
-
-    /**
-     * @return string
-     */
-    public function getFieldsKey()
-    {
-        return Container::key() . '_fields';
+        return update_option(Container::key() . '_options', $options);
     }
 }

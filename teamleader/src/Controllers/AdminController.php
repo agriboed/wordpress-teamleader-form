@@ -65,14 +65,9 @@ class AdminController extends AbstractController implements HooksInterface
      */
     public function renderOptionsPage()
     {
-        wp_enqueue_style(Container::key() . '-styles', Container::pluginUrl() . 'assets/css/styles.css', null, Container::version());
-        wp_enqueue_style(Container::key() . '-admin', Container::pluginUrl() . 'assets/css/admin.css');
-        wp_enqueue_script(Container::key() . '-admin', Container::pluginUrl() . 'assets/js/app.js', array('jquery'), Container::version());
-
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
-        $optionsHelper = $this->container->get(OptionsHelper::class);
+        wp_enqueue_style(Container::key(), Container::pluginUrl() . 'assets/css/admin.css', false, mt_rand(0, 22222));
+        wp_enqueue_script(Container::key(), Container::pluginUrl() . 'assets/js/app.js', ['jquery'], mt_rand(0, 22222),
+            Container::version());
 
         /**
          * @var $fieldsHelper FieldsHelper
@@ -81,11 +76,8 @@ class AdminController extends AbstractController implements HooksInterface
 
         $data = [
             'key' => Container::key(),
-            'form_options' => $optionsHelper->getForm(),
-            'webhook' => $optionsHelper->getWebhook(),
-            'fields_options' => $optionsHelper->getFields(),
-            'form_name' => $optionsHelper->getFormKey(),
-            'fields_name' => $optionsHelper->getFieldsKey(),
+            'options' => OptionsHelper::getOptions(),
+            'forms' => OptionsHelper::getForms(),
             'fields' => $fieldsHelper->getFields(),
         ];
 

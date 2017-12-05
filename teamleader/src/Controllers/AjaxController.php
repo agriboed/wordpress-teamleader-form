@@ -7,11 +7,11 @@
 namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Helpers\FieldsHelper;
-use Teamleader\Helpers\OptionsHelper;
 use Teamleader\Interfaces\HooksInterface;
-use Curl\Curl;
+use Teamleader\Helpers\OptionsHelper;
+use Teamleader\Helpers\FieldsHelper;
 use ReCaptcha\ReCaptcha;
+use Curl\Curl;
 
 /**
  * Class AjaxHandler
@@ -26,6 +26,17 @@ class AjaxController extends AbstractController implements HooksInterface
     {
         add_action('wp_ajax_' . Container::key(), [$this, 'ajaxHandler']);
         add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'ajaxHandler']);
+
+        add_action('wp_ajax_teamleader_options', [$this, 'saveOptions']);
+    }
+
+    /**
+     * @param $nonce
+     * @return bool
+     */
+    protected function checkNonce($nonce)
+    {
+        return wp_create_nonce('teamleader') === $nonce;
     }
 
     /**
@@ -37,12 +48,12 @@ class AjaxController extends AbstractController implements HooksInterface
          * @var $optionsHelper OptionsHelper
          */
         $optionsHelper = $this->container->get(OptionsHelper::class);
-        $data          = $this->processFields();
-        $formOptions   = $optionsHelper->getForm();
+        $data = $this->processFields();
+        $formOptions = $optionsHelper->getForm();
 
-        if ( ! empty($formOptions['recaptcha'] && ! empty($formOptions['recaptcha_secret_key']))) {
+        if (!empty($formOptions['recaptcha'] && !empty($formOptions['recaptcha_secret_key']))) {
             $recaptcha = new ReCaptcha($formOptions['recaptcha_secret_key']);
-            $resp      = $recaptcha->verify($_POST['g-recaptcha-response']);
+            $resp = $recaptcha->verify($_POST['g-recaptcha-response']);
 
             if (false === $resp->isSuccess()) {
                 $this->setResponse(false, $resp->getErrorCodes());
@@ -79,18 +90,51 @@ class AjaxController extends AbstractController implements HooksInterface
         /**
          * @var $fieldsHelper FieldsHelper
          */
-        $fieldsHelper   = $this->container->get(FieldsHelper::class);
-        $fields         = $fieldsHelper->getFields();
+        $fieldsHelper = $this->container->get(FieldsHelper::class);
+        $fields = $fieldsHelper->getFields();
         $fields_options = $optionsHelper->getFields();
 
         $data = [];
 
         foreach ($fields as $key => $field) {
-            $value      = isset($_POST['data'][$key]) ? $_POST['data'][$key] : null;
-            $data[$key] = ! empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : $value;
+            $value = isset($_POST['data'][$key]) ? $_POST['data'][$key] : null;
+            $data[$key] = !empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : $value;
         }
 
         return $data;
+    }
+
+    public function saveOptions()
+    {
+        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
+            return $this->setResponse(false, __('Security Error'));
+        }
+
+        if (empty($_POST['webhook'])) {
+            return $this->setResponse(false, __('Webhook is empty'));
+        }
+
+        $options = [
+            'webhook' => sanitize_text_field($_POST['webhook']),
+            'logo' => isset($_POST['logo']) ? true : false,
+            'referral' => !empty($_POST['referral']) ? sanitize_text_field($_POST['referral']) : null,
+            'recaptcha' => [
+                'enable' => isset($_POST['recaptcha']['enable']) ? true : false,
+                'key' => !empty($_POST['recaptcha']['key']) ? sanitize_text_field($_POST['recaptcha']['key']) : null,
+                'secret' => !empty($_POST['recaptcha']['secret']) ? sanitize_text_field($_POST['recaptcha']['secret']) : null,
+            ]
+        ];
+
+        if (empty($options['recaptcha']['key']) || empty($options['recaptcha']['secret'])) {
+            $options['recaptcha']['enabled'] = false;
+        }
+
+        /**
+         * @var $optionsHelper OptionsHelper
+         */
+        OptionsHelper::setOptions($options);
+
+        return $this->setResponse(true, __('Settings saved'));
     }
 
     /**
@@ -100,5 +144,6 @@ class AjaxController extends AbstractController implements HooksInterface
     protected function setResponse($success = false, $message = '')
     {
         echo json_encode(['success' => $success, 'message' => $message]);
+        wp_die();
     }
 }

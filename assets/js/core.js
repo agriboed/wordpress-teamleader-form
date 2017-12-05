@@ -7,6 +7,8 @@ class App {
    */
   constructor() {
     this.key = 'teamleader';
+    this.url = window.TeamLeader.url;
+    this.nonce = window.TeamLeader.nonce;
     this.container = jQuery('#teamleader');
     this.forms = [];
     //  try {
@@ -28,7 +30,11 @@ class App {
    * @return App
    */
   init() {
-    this.bindActive().bindCreateForm().bindReCaptcha().bindLogo();
+    this.bindActive().
+        bindCreateForm().
+        bindReCaptcha().
+        bindLogo().
+        bindSaveOptions();
     return this;
   }
 
@@ -51,11 +57,17 @@ class App {
    * @return App
    */
   bindLogo() {
-    let logo = this.getElement('#teamleader_logo');
-    let container = this.getElement('.teamleader_logo-container');
-    logo.click(() => {
+    let el = this.getElement('[data-action=logo]');
+    let container = this.getElement('[data-container=logo]');
+
+    if (el.attr('checked')) {
+      container.show();
+    }
+
+    el.click(() => {
       container.toggle();
     });
+
     return this;
   }
 
@@ -63,11 +75,17 @@ class App {
    * @return App
    */
   bindReCaptcha() {
-    let reCaptcha = this.getElement('#teamleader_recaptcha');
-    let container = this.getElement('.teamleader_recaptcha-container');
-    reCaptcha.click(() => {
-      container.toggle();
+    let el = this.getElement('[data-action=recaptcha]');
+    let container = this.getElement('[data-container=recaptcha]');
+
+    if (el.attr('checked')) {
+      container.show();
+    }
+
+    el.click(() => {
+      container.toggle('normal');
     });
+
     return this;
   }
 
@@ -75,13 +93,14 @@ class App {
    * @return App
    */
   bindCreateForm() {
-    let button = this.getElement('.create-form');
-    let self = this;
+    let button = this.getElement('[data-action=create]');
 
     button.click((e) => {
       e.preventDefault();
-      self.createForm();
+      button.hide();
+      this.createForm();
     });
+
     return this;
   }
 
@@ -91,11 +110,102 @@ class App {
   createForm() {
     let form = jQuery(document.createElement('div'));
     let template = this.getElement('#template').html();
+
     form.html(template);
-    this.forms.push(form);
     form.hide();
-    this.getElement('.create-form-container').append(form);
+
+    this.forms.push(form);
+
+    this.bindSaveNewForm(form.find('[data-action=save]'), form);
+    this.bindDiscardNewForm(form.find('[data-action=discard]'));
+
+    this.getElement('[data-container=create]').html(form);
     form.fadeIn();
+  }
+
+  /**
+   *
+   * @param el
+   * @param form
+   */
+  bindSaveNewForm(el, form) {
+    let data = form.serializeArray();
+
+    el.onclick(() => {
+      this.getElement('[data-container=create]').html('');
+      this.getElement('[data-action=create]').fadeIn('normal');
+
+      this.showMessage('Form added');
+    });
+  }
+
+  /**
+   *
+   * @param el
+   */
+  bindDiscardNewForm(el) {
+    el.click(() => {
+      this.getElement('[data-container=create]').html('');
+      this.getElement('[data-action=create]').fadeIn('normal');
+    });
+  }
+
+  /**
+   *
+   */
+  bindSaveOptions() {
+    let button = this.getElement('[data-action=save-options]');
+
+    button.click((e) => {
+      e.preventDefault();
+
+      let form = button.closest('form');
+      let data = {
+        action: 'teamleader_options',
+        nonce: this.nonce,
+      };
+
+      jQuery(form.serializeArray()).each(function(i, el) {
+        data[el.name] = el.value;
+      });
+
+      jQuery.ajax({
+        url: this.url,
+        method: 'post',
+        data: data,
+        dataType: 'json',
+        success: (response) => {
+          this.showMessage(response.message);
+        },
+        error: (response) => {
+          console.log(response);
+          this.showMessage('Server error. Please, try again');
+        },
+      });
+    });
+  }
+
+  /**
+   *
+   * @param message
+   * @param success
+   */
+  showMessage(message = '', success) {
+    let container = this.getElement('[data-action=message]');
+    container.html(message);
+
+    container.removeClass('success error');
+
+    if (success === true) {
+      container.addClass('success');
+    } else if (success === false) {
+      container.addClass('error');
+    }
+    container.addClass('status').fadeIn('normal');
+
+    setTimeout(() => {
+      container.fadeOut('normal').html('');
+    }, 5000);
   }
 }
 
