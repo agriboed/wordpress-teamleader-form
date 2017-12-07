@@ -31,6 +31,22 @@ class OptionsHelper
     }
 
     /**
+     * @param $forms
+     * @return bool
+     */
+    public static function setForms($forms){
+        return update_option(Container::key() . '_forms', $forms);
+    }
+
+    /**
+     * @return int
+     */
+    public static function getLastFromId()
+    {
+        return get_option(Container::key().'_forms_id', 0);
+    }
+
+    /**
      * @param array $options
      * @return bool
      */

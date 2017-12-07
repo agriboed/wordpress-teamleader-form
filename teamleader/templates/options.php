@@ -3,7 +3,6 @@
     </div>
     <form>
         <h1><?php _e('Teamleader', $data['key']); ?></h1>
-
         <div class="tl__table">
             <div class="tl__heading">
                 <?php _e('Plugin settings', $data['key']); ?>
@@ -34,7 +33,7 @@
                             </label>
                             <button class="button button-primary"
                                     data-action="save-options">
-                            <?php _e('Save', $data['key']); ?>
+                                <?php _e('Save', $data['key']); ?>
                             </button>
                         </div>
                     </div>
@@ -51,7 +50,7 @@
                     $data['key']); ?>
             </div>
         </div>
-        
+
         <div class="tl__table">
             <div class="tl__heading">
                 <?php _e('Additional settings', $data['key']); ?>
@@ -64,7 +63,7 @@
                         <input type="checkbox"
                                data-action="logo"
                                name="logo"
-                               <?php echo !empty($data['options']['logo']) ? 'checked' : '' ?>>
+                            <?php echo !empty($data['options']['logo']) ? 'checked' : '' ?>>
                     </label>
                     <div class="tl_description">
                         <?php _e('Say thanks for providing this free plugin and earn extra money with refferal program.',
@@ -127,109 +126,124 @@
         </div>
     </form>
 
-    <div class="forms-container"></div>
-    <div class="create-form-container"></div>
-    <button class="button button-primary" data-action="create"><?php _e('Create new form', $data['key']); ?></button>
+    <div data-container="forms"></div>
+    <div data-container="create"></div>
+
+    <button class="button button-primary" data-action="createForm">
+        <?php _e('Add new form', $data['key']); ?>
+    </button>
 
     <script type="text/template" id="template">
+        <form>
         <div class="tl__edit tl__table">
-            <div class="heading">
+            <div class="tl__heading">
                 <?php _e('Create new form', $data['key']); ?>
             </div>
-            <div class="body">
+            <div class="tl__body">
                 <div class="tl__step">
                     <label>
-                        <?php _e('Form Title', $data['key']); ?>
+                        <?php _e('Form Title *', $data['key']); ?>
                         <input name="form[title]" class="tl_input" value=""
+                               data-element="formTitle"
                                placeholder="<?php _e('New form', $data['key']); ?>">
                     </label>
-                    <div class="description">
+                    <div class="tl_description">
                         <?php _e('Specify the name of the new form', $data['key']); ?>
                     </div>
                 </div>
                 <div class="tl__step">
                     <label>
                         <?php _e('Submit button text', $data['key']); ?>
-                        <input name="form[submit]" value="" placeholder="<?php _e('Send', $data['key']); ?>">
+                        <input name="form[submit]" value=""
+                               class="tl_input"
+                               placeholder="<?php _e('Send', $data['key']); ?>">
                     </label>
-                    <div class="description">
+                    <div class="tl_description">
                         <?php _e('Specify the label of the submit button', $data['key']); ?>
                     </div>
                 </div>
                 <div class="tl__step">
                     <label>
                         <?php _e('After submission text', $data['key']); ?>
-                        <input name="form[success]" value="" placeholder="<?php _e('Thank you!', $data['key']); ?>">
+                        <input name="form[success]" value=""
+                               class="tl_input"
+                               placeholder="<?php _e('Thank you!', $data['key']); ?>">
                     </label>
-                    <div class="description">
+                    <div class="tl_description">
                         <?php _e('This is the text that is shown after the form has been successfully submitted',
                             $data['key']); ?>
                     </div>
                 </div>
             </div>
-            <div class="heading">
-                <?php _e('Form fields', $data['key']); ?>
+            <div class="tl__heading">
+                <?php _e('Fields', $data['key']); ?>
             </div>
-            <div class="body-fields">
+            <div class="tl__fields-container">
                 <?php foreach ($data['fields'] as $key => $field): ?>
-                    <div class="field <?php echo (true === $field['required']) ? '' : 'disabled'; ?>">
-                        <div class="active">
+                    <div class="tl__field <?php echo (true === $field['required']) ? '' : 'tl__disabled'; ?>">
+                        <div class="tl__active">
                             <input type="checkbox"
                                    name="<?php echo $key; ?>[active]"
                                 <?php echo (true === $field['required']) ? 'checked disabled' : ''; ?>
-                                   id="<?php echo $field['title'] ?>"
+                                   data-action="activateField"
+                                   id="<?php echo $key;?>"
                             />
                         </div>
-                        <div class="name">
+                        <div class="tl__name">
                             <strong>
-                                <label for="<?php echo $field['title'] ?>"><?php echo $field['title'] ?></label>
+                                <label for="<?php echo $key; ?>"><?php echo $field['title'] ?></label>
                             </strong>
-                            <div class="description">
+                            <div class="tl_description">
                                 <?php echo (true === $field['required']) ? __('Field is required',
                                     $data['key']) : ''; ?>
                             </div>
                         </div>
-                        <div class="label">
+                        <div class="tl__label">
                             <?php _e('Field label', $data['key']); ?>
                             <input placeholder="<?php echo $field['title'] ?>"
                                    name="<?php echo $key; ?>[label]"
-                                   value="">
+                                   class="tl_input"
+                                   value=""
+                                   <?php echo (true === $field['required']) ? '' : 'disabled'; ?>>
                         </div>
-                        <div class="default">
+                        <div class="tl__default">
                             <label>
                                 <?php _e('Default value', $data['key']); ?>
                                 <?php if ($file['type'] === 'textarea'): ?>
-                                    <textarea name="<?php echo $key; ?>[default]"></textarea>
+                                    <textarea name="<?php echo $key; ?>[default]" class="tl_input"
+                                        <?php echo (true === $field['required']) ? '' : 'disabled'; ?>></textarea>
                                 <?php else: ?>
-                                    <input name="<?php echo $key; ?>[default]" value="">
+                                    <input name="<?php echo $key; ?>[default]"
+                                           value="" class="tl_input"
+                                        <?php echo (true === $field['required']) ? '' : 'disabled'; ?>>
                                 <?php endif; ?>
                             </label>
                         </div>
-                        <div class="required">
+                        <div class="tl__required">
                             <?php if (true !== $field['required']): ?>
                                 <?php _e('Required?', $data['key']); ?>
-                                <div class="radio">
+                                <div class="tl__radio">
                                     <label>
-                                        <input type="radio" name="<?php echo $key; ?>[required]">
+                                        <input type="radio" name="<?php echo $key; ?>[required]" value="1" data-action="requiredField" disabled>
                                         <?php _e('Yes', $data['key']); ?>
                                     </label>
                                     <label>
-                                        <input type="radio" name="<?php echo $key; ?>[required]" checked>
+                                        <input type="radio" name="<?php echo $key; ?>[required]" value="0" data-action="requiredField" checked disabled>
                                         <?php _e('No', $data['key']); ?>
                                     </label>
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <div class="required">
+                        <div class="tl__hidden">
                             <?php if (true !== $field['required']): ?>
                                 <?php _e('Hidden?', $data['key']); ?>
-                                <div class="radio">
+                                <div class="tl__radio">
                                     <label>
-                                        <input type="radio" name="<?php echo $key; ?>[hidden]">
+                                        <input type="radio" name="<?php echo $key; ?>[hidden]" value="1" data-action="hiddenField" disabled>
                                         <?php _e('Yes', $data['key']); ?>
                                     </label>
                                     <label>
-                                        <input type="radio" name="<?php echo $key; ?>[hidden]" checked>
+                                        <input type="radio" name="<?php echo $key; ?>[hidden]" value="0" data-action="hiddenField" checked disabled>
                                         <?php _e('No', $data['key']); ?>
                                     </label>
                                 </div>
@@ -237,15 +251,24 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
-                <div class="buttons">
-                    <button type="button" class="button button-primary"><?php _e('Save form'); ?></button>
-                    <button type="button" class="button button-cancel"><?php _e('Discard form'); ?></button>
+                <div class="tl__buttons">
+                    <button type="button" class="button button-primary"
+                            data-action="addForm"><?php _e('Add form'); ?></button>
+                    <button type="button" class="button button-cancel"
+                            data-action="discardForm"><?php _e('Discard form'); ?></button>
                 </div>
+        </form>
     </script>
     <script>
-        var TeamLeader = {
-          url: '<?php echo admin_url('admin-ajax.php');?>',
-          nonce: '<?php echo wp_create_nonce('teamleader');?>'
-        }
+      (function ($) {
+        $(document).ready(function () {
+          TeamLeader({
+            key: 'teamleader',
+            url: '<?php echo admin_url('admin-ajax.php');?>',
+            nonce: '<?php echo wp_create_nonce('teamleader');?>',
+            container: $('#teamleader'),
+          })
+        })
+      }(jQuery))
     </script>
 </div>

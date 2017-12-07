@@ -7,33 +7,17 @@
 namespace Teamleader\Helpers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Interfaces\DependencyInterface;
 
 /**
  * Class Fields
  * @package Teamleader\Helpers
  */
-class FieldsHelper implements DependencyInterface
+class FieldsHelper extends AbstractHelper
 {
-    /**
-     * @var Container
-     */
-    protected $container;
-
     /**
      * @var array
      */
     protected $fields;
-
-    /**
-     * Fields constructor.
-     *
-     * @param Container $container
-     */
-    public function setContainer(Container $container)
-    {
-        $this->container = $container;
-    }
 
     /**
      *
@@ -44,7 +28,7 @@ class FieldsHelper implements DependencyInterface
     {
         if (null === $this->fields) {
 
-            if ( ! file_exists(Container::pluginDir() . '/fields/fields.php')) {
+            if (!file_exists(Container::pluginDir() . '/fields/fields.php')) {
                 throw new \LogicException('Fields file not found');
             }
 

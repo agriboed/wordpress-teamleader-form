@@ -7,6 +7,7 @@
 namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
+use Teamleader\Helpers\FormsHelper;
 use Teamleader\Interfaces\HooksInterface;
 use Teamleader\Helpers\OptionsHelper;
 use Teamleader\Helpers\FieldsHelper;
@@ -28,6 +29,7 @@ class AjaxController extends AbstractController implements HooksInterface
         add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'ajaxHandler']);
 
         add_action('wp_ajax_teamleader_options', [$this, 'saveOptions']);
+        add_action('wp_ajax_teamleader_create', [$this, 'createForm']);
     }
 
     /**
@@ -135,6 +137,25 @@ class AjaxController extends AbstractController implements HooksInterface
         OptionsHelper::setOptions($options);
 
         return $this->setResponse(true, __('Settings saved'));
+    }
+
+    /**
+     *
+     */
+    public function createForm()
+    {
+        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
+            return $this->setResponse(false, __('Security Error'));
+        }
+
+        if (empty($_POST['form'])){
+            return $this->setResponse(false, __('Form is empty'));
+        }
+
+        /**
+         *
+         */
+       $formsHelper = $this->container->get(FormsHelper::class);
     }
 
     /**

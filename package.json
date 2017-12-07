@@ -32,6 +32,7 @@
     "gulp-uglify": "^3.0.0"
   },
   "dependencies": {
-    "babel-core": "^6.26.0"
+    "babel-core": "^6.26.0",
+    "gulp-watch": "^4.3.11"
   }
 }

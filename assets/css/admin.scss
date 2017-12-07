@@ -109,71 +109,84 @@
     border: 2px solid #e9e9e9;
   }
 
-  &__edit {
+  &_input.error {
+    border: 1px solid indianred;
+  }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      flex-flow: row wrap;
-      padding: 30px 30px;
-      border-bottom: 1px solid #e4e4e4;
-    }
+  &__field {
+    display: flex;
+    flex-direction: column;
+    flex-flow: row wrap;
+    padding: 30px 30px;
+    border-bottom: 1px solid #e4e4e4;
 
-    .disabled {
-      opacity: 0.3;
-    }
-
-    .field:nth-child(2n) {
-      background: #f9f9f9;
-    }
-
-    .active {
-      width: 3%;
-      padding-top: 5px;
-    }
-
-    .active:hover {
-      opacity: 1;
-    }
-
-    .name {
-      width: 15%;
-    }
-
-    .label {
-      width: 25%;
-    }
-
-    .default {
-      width: 25%;
-    }
-
-    .label input[type=text],
-    .default input[type=text] {
+    .tl_input {
       width: 90%;
     }
-    .label input[type=text]:focus,
-    .default input[type=text]:focus {
-      box-shadow: none;
-    }
+  }
 
-    .required {
-      width: 20%;
-    }
-    .required .radio {
-      margin-top: 10px;
-    }
+  &__disabled {
+    opacity: 0.3;
+  }
 
-    .required .radio label {
-      margin-right: 10px;
-    }
+  &__field:nth-child(2n) {
+    background: #f9f9f9;
+  }
 
-    .required input[type=radio]:checked:before {
+  &__active {
+    width: 3%;
+    padding-top: 5px;
+  }
+
+  &__active:hover {
+    opacity: 1;
+  }
+
+  &__name {
+    width: 15%;
+  }
+
+  &__label {
+    width: 25%;
+  }
+
+  &__default {
+    width: 25%;
+  }
+
+  &__label input[type=text],
+  &__default input[type=text] {
+    width: 90%;
+  }
+  &__label input[type=text]:focus,
+  &__default input[type=text]:focus {
+    box-shadow: none;
+  }
+
+  .tl__radio {
+    margin-top: 10px;
+  }
+
+  .tl__radio label {
+    margin-right: 10px;
+  }
+
+  &__required,
+  &__hidden {
+    width: 10%;
+    text-align: center;
+
+    input[type=radio]:checked:before {
       background-color: #18aaa7;
     }
+  }
 
-    .active input[type=checkbox]:checked:before {
-      color: #18aaa7
-    }
+  &_active input[type=checkbox]:checked:before {
+    color: #18aaa7
+  }
+
+  &__buttons {
+    margin: 20px;
+    text-align: center;
   }
 }
