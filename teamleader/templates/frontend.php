@@ -50,9 +50,9 @@
         <?php endif; ?>
     </form>
     <div class="teamleader-success" data-success
-         style="display: none;"><?php echo addslashes($form['success']); ?></div>
+         style="display: none;"><?php echo addslashes($form['form']['success']); ?></div>
     <div class="teamleader-error" data-error style="display: none;"><?php _e('Error sending form. Please contact system
-        administrator.', $key); ?>
+        administrator.', 'teamleader'); ?>
     </div>
 </div>
 <script>
@@ -100,7 +100,7 @@
       }, 10000)
     },
     submitData = function () {
-      var data = 'action=<?php echo $key;?>&' + form.serialize(),
+      var data = 'action=teamleader&' + form.serialize(),
         has_error = false
 
       form.find('input').each(function () {
