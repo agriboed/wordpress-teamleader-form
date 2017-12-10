@@ -125,8 +125,18 @@ class App {
     this.bindRequiredField(form.find('[data-action=requiredField]'));
     this.bindHiddenField(form.find('[data-action=hiddenField]'));
 
-
     form.fadeIn();
+  }
+
+  getFormData(form) {
+    const unindexedArray = form.serializeArray();
+    const indexedArray = {};
+
+    jQuery.map(unindexedArray, (n, i) => {
+      indexedArray[n.name] = n.value;
+    });
+
+    return indexedArray;
   }
 
   /**
@@ -137,11 +147,6 @@ class App {
     el.click(() => {
       const form = el.closest('form');
       const title = form.find('[data-element=formTitle]');
-      const data = {
-        action: 'teamleader_create',
-        nonce: this.nonce,
-        form: [],
-      };
 
       if (title.val() === '') {
         this.showMessage('Form title is empty', false);
@@ -151,12 +156,10 @@ class App {
 
       title.removeClass('error');
 
-      jQuery(form.serializeArray()).each((i, item) => {
-        data.form.push(item);
-        console.log(item);
-      });
+      const data = this.getFormData(form);
+      data.action = 'teamleader_create';
+      data.nonce = this.nonce;
 
-      console.log(data);
       jQuery.ajax({
         url: this.url,
         method: 'post',
@@ -239,7 +242,8 @@ class App {
   bindHiddenField(el) {
     el.click((e) => {
       const hiddenRadio = jQuery(e.target);
-      const requiredContainer = hiddenRadio.closest('.tl__field').find('.tl__required');
+      const requiredContainer = hiddenRadio.closest('.tl__field')
+        .find('.tl__required');
       const requiredRadio = requiredContainer.find('input');
 
       requiredContainer.removeClass('tl__disabled');
@@ -255,7 +259,8 @@ class App {
   bindRequiredField(el) {
     el.click((e) => {
       const requiredRadio = jQuery(e.target);
-      const hiddenContainer = requiredRadio.closest('.tl__field').find('.tl__hidden');
+      const hiddenContainer = requiredRadio.closest('.tl__field')
+        .find('.tl__hidden');
       const hiddenRadio = hiddenContainer.find('input');
 
       hiddenContainer.removeClass('tl__disabled');
@@ -267,6 +272,7 @@ class App {
       }
     });
   }
+
   /**
    *
    * @param message
@@ -281,7 +287,7 @@ class App {
     if (success === true) {
       container.addClass('success');
     } else if (success === false) {
-      container.addClass('error');
+      container.addClass('failed');
     }
     container.addClass('status').fadeIn('normal');
 

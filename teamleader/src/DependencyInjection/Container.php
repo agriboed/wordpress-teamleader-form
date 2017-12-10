@@ -119,7 +119,8 @@ class Container
      * @param array $arguments
      *
      * @return mixed
-     * @throws \Exception
+     * @throws \ReflectionException
+     * @throws \LogicException
      */
     public function get($dependency, array $arguments = [])
     {

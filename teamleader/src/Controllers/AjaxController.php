@@ -8,6 +8,7 @@ namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
 use Teamleader\Helpers\FormsHelper;
+use Teamleader\Interfaces\AjaxInterface;
 use Teamleader\Interfaces\HooksInterface;
 use Teamleader\Helpers\OptionsHelper;
 use Teamleader\Helpers\FieldsHelper;
@@ -18,8 +19,10 @@ use Curl\Curl;
  * Class AjaxHandler
  * @package Teamleader\Controllers
  */
-class AjaxController extends AbstractController implements HooksInterface
+class AjaxController extends AbstractController implements HooksInterface, AjaxInterface
 {
+    protected $data;
+
     /**
      * Set Wordpress hooks
      */
@@ -79,6 +82,7 @@ class AjaxController extends AbstractController implements HooksInterface
 
     /**
      * @return array
+     * @throws \ReflectionException
      * @throws \Exception
      * @throws \LogicException
      */
@@ -106,14 +110,22 @@ class AjaxController extends AbstractController implements HooksInterface
         return $data;
     }
 
+    /**
+     * Store plugin options in database
+     *
+     */
     public function saveOptions()
     {
+        $this->data['success'] = false;
+
         if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
-            return $this->setResponse(false, __('Security Error'));
+            $this->data['message'] = __('Security Error', Container::key());
+            return $this->renderJson();
         }
 
         if (empty($_POST['webhook'])) {
-            return $this->setResponse(false, __('Webhook is empty'));
+            $this->data['message'] = __('Webhook is empty', Container::key());
+            return $this->renderJson();
         }
 
         $options = [
@@ -131,40 +143,53 @@ class AjaxController extends AbstractController implements HooksInterface
             $options['recaptcha']['enabled'] = false;
         }
 
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
         OptionsHelper::setOptions($options);
 
-        return $this->setResponse(true, __('Settings saved'));
+        $this->data['success'] = true;
+        $this->data['message'] = __('Settings saved', Container::key());
+        return $this->renderJson();
+    }
+
+    /**
+     *
+     * @throws \Exception
+     */
+    public function createForm()
+    {
+        $this->data['success'] = false;
+
+        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
+            $this->data['message'] = __('Security Error', Container::key());
+            return $this->renderJson();
+        }
+
+        if (empty($_POST['form'])) {
+            $this->data['message'] = __('Form is empty', Container::key());
+            return $this->renderJson();
+        }
+
+        /**
+         * @var $formsHelper FormsHelper
+         */
+        $formsHelper = $this->container->get(FormsHelper::class);
+        try {
+            $form_id = $formsHelper->createForm($_POST);
+            $this->data['form_id'] = $form_id;
+            $this->data['success'] = true;
+            $this->data['message'] = __('Form created', Container::key());
+        } catch (\LogicException $exception) {
+            $this->data['message'] = __('System error', Container::key());
+        }
+
+        return $this->renderJson();
     }
 
     /**
      *
      */
-    public function createForm()
+    public function renderJson()
     {
-        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
-            return $this->setResponse(false, __('Security Error'));
-        }
-
-        if (empty($_POST['form'])){
-            return $this->setResponse(false, __('Form is empty'));
-        }
-
-        /**
-         *
-         */
-       $formsHelper = $this->container->get(FormsHelper::class);
-    }
-
-    /**
-     * @param bool $success
-     * @param string $message
-     */
-    protected function setResponse($success = false, $message = '')
-    {
-        echo json_encode(['success' => $success, 'message' => $message]);
+        echo json_encode($this->data);
         wp_die();
     }
 }
