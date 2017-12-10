@@ -189,4 +189,38 @@
     margin: 20px;
     text-align: center;
   }
+
+  &__forms > div {
+    display: block;
+  }
+
+  &__form {
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 10px;
+    margin: 10px 5px 10px 0;
+    width: 400px;
+    display: inline-block;
+
+    &-title {
+      font-weight: 700;
+      font-size: 1.3em;
+      margin-bottom: 10px;
+    }
+
+    &-info {
+      font-style: italic;
+    }
+
+    &-shortcode {
+      padding: 10px;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    &-buttons {
+      text-align: right;
+      margin: 10px 0;
+    }
+  }
 }

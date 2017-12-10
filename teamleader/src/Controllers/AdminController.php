@@ -60,6 +60,7 @@ class AdminController extends AbstractController implements HooksInterface
     /**
      * Render page
      *
+     * @throws \ReflectionException
      * @throws \LogicException
      * @throws \Exception
      */

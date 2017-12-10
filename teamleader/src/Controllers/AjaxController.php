@@ -28,86 +28,61 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
      */
     public function initHooks()
     {
-        add_action('wp_ajax_' . Container::key(), [$this, 'ajaxHandler']);
-        add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'ajaxHandler']);
+        add_action('wp_ajax_' . Container::key(), [$this, 'frontHandler']);
+        add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'frontHandler']);
 
         add_action('wp_ajax_teamleader_options', [$this, 'saveOptions']);
         add_action('wp_ajax_teamleader_create', [$this, 'createForm']);
+        add_action('wp_ajax_teamleader_delete', [$this, 'deleteForm']);
     }
 
     /**
-     * @param $nonce
      * @return bool
      */
-    protected function checkNonce($nonce)
+    protected function checkNonce()
     {
-        return wp_create_nonce('teamleader') === $nonce;
+        if (!isset($_POST['nonce'])) {
+            $this->data['message'] = __('Security Error', Container::key());
+            return false;
+        }
+
+        if (wp_create_nonce('teamleader') !== $_POST['nonce']) {
+            $this->data['message'] = __('Security Error', Container::key());
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * @throws \Exception
      */
-    public function ajaxHandler()
+    public function frontHandler()
     {
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
-        $optionsHelper = $this->container->get(OptionsHelper::class);
-        $data = $this->processFields();
-        $formOptions = $optionsHelper->getForm();
+        $this->data['success'] = false;
+        $options = OptionsHelper::getOptions();
 
-        if (!empty($formOptions['recaptcha'] && !empty($formOptions['recaptcha_secret_key']))) {
-            $recaptcha = new ReCaptcha($formOptions['recaptcha_secret_key']);
+        if (true === $options['recaptcha'] && !empty($options['recaptcha_secret_key'])) {
+            $recaptcha = new ReCaptcha($options['recaptcha_secret_key']);
             $resp = $recaptcha->verify($_POST['g-recaptcha-response']);
 
             if (false === $resp->isSuccess()) {
-                $this->setResponse(false, $resp->getErrorCodes());
-                wp_die();
+                $this->data['message'] = 'Recaptcha invalid';
+               return $this->renderJson();
             }
         }
 
         try {
             $curl = new Curl();
-            $curl->post($optionsHelper->getWebhook(), $data);
+            $curl->post($options['webhook'], $_POST);
+            $this->data['success'] = true;
+            $this->data['message'] = __('Data sent', Container::key());
 
         } catch (\LogicException $exception) {
-            $this->setResponse(false, $exception->getMessage());
-            wp_die();
+            $this->data['message'] = $exception->getMessage();
         }
 
-        $this->setResponse(true);
-
-        wp_die();
-    }
-
-    /**
-     * @return array
-     * @throws \ReflectionException
-     * @throws \Exception
-     * @throws \LogicException
-     */
-    protected function processFields()
-    {
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
-        $optionsHelper = $this->container->get(OptionsHelper::class);
-
-        /**
-         * @var $fieldsHelper FieldsHelper
-         */
-        $fieldsHelper = $this->container->get(FieldsHelper::class);
-        $fields = $fieldsHelper->getFields();
-        $fields_options = $optionsHelper->getFields();
-
-        $data = [];
-
-        foreach ($fields as $key => $field) {
-            $value = isset($_POST['data'][$key]) ? $_POST['data'][$key] : null;
-            $data[$key] = !empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : $value;
-        }
-
-        return $data;
+        return $this->renderJson();
     }
 
     /**
@@ -118,8 +93,7 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
     {
         $this->data['success'] = false;
 
-        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
-            $this->data['message'] = __('Security Error', Container::key());
+        if (false === $this->checkNonce()) {
             return $this->renderJson();
         }
 
@@ -128,23 +102,7 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
             return $this->renderJson();
         }
 
-        $options = [
-            'webhook' => sanitize_text_field($_POST['webhook']),
-            'logo' => isset($_POST['logo']) ? true : false,
-            'referral' => !empty($_POST['referral']) ? sanitize_text_field($_POST['referral']) : null,
-            'recaptcha' => [
-                'enable' => isset($_POST['recaptcha']['enable']) ? true : false,
-                'key' => !empty($_POST['recaptcha']['key']) ? sanitize_text_field($_POST['recaptcha']['key']) : null,
-                'secret' => !empty($_POST['recaptcha']['secret']) ? sanitize_text_field($_POST['recaptcha']['secret']) : null,
-            ]
-        ];
-
-        if (empty($options['recaptcha']['key']) || empty($options['recaptcha']['secret'])) {
-            $options['recaptcha']['enabled'] = false;
-        }
-
-        OptionsHelper::setOptions($options);
-
+        OptionsHelper::setOptions($_POST);
         $this->data['success'] = true;
         $this->data['message'] = __('Settings saved', Container::key());
         return $this->renderJson();
@@ -158,8 +116,7 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
     {
         $this->data['success'] = false;
 
-        if (!isset($_POST['nonce']) || false === $this->checkNonce($_POST['nonce'])) {
-            $this->data['message'] = __('Security Error', Container::key());
+        if (false === $this->checkNonce()) {
             return $this->renderJson();
         }
 
@@ -173,14 +130,42 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
          */
         $formsHelper = $this->container->get(FormsHelper::class);
         try {
-            $form_id = $formsHelper->createForm($_POST);
-            $this->data['form_id'] = $form_id;
+            $this->data['id'] = $formsHelper->createForm($_POST);
             $this->data['success'] = true;
             $this->data['message'] = __('Form created', Container::key());
         } catch (\LogicException $exception) {
             $this->data['message'] = __('System error', Container::key());
         }
 
+        return $this->renderJson();
+    }
+
+    /**
+     *
+     * @throws \ReflectionException
+     * @throws \LogicException
+     */
+    public function deleteForm()
+    {
+        $this->data['success'] = false;
+
+        if (false === $this->checkNonce()) {
+            return $this->renderJson();
+        }
+
+        if (!isset($_POST['id'])) {
+            $this->data['message'] = __('Nothing to delete', Container::key());
+            return $this->renderJson();
+        }
+
+        /**
+         * @var $formsHelper FormsHelper
+         */
+        $formsHelper = $this->container->get(FormsHelper::class);
+        $formsHelper->deleteForm((int)$_POST['id']);
+
+        $this->data['success'] = true;
+        $this->data['message'] = __('Form was deleted', Container::key());
         return $this->renderJson();
     }
 

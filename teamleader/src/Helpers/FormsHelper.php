@@ -4,13 +4,20 @@ namespace Teamleader\Helpers;
 
 use Teamleader\DependencyInjection\Container;
 
+/**
+ * Class FormsHelper
+ * @package Teamleader\Helpers
+ */
 class FormsHelper extends AbstractHelper
 {
     /**
+     * Method creates from from user's data and return last id
+     *
      * @param $data
      * @return int
      * @throws \Exception
      * @throws \LogicException
+     * @throws \ReflectionException
      */
     public function createForm($data)
     {
@@ -18,13 +25,17 @@ class FormsHelper extends AbstractHelper
         $last_id = OptionsHelper::getLastFromId();
         $last_id++;
 
-        $data = $this->processData($data);
+        try {
+            $data = $this->processData($data);
 
-        $forms[$last_id] = $data;
-        OptionsHelper::setForms($forms);
+            $forms[$last_id] = $data;
+            OptionsHelper::setForms($forms);
+            OptionsHelper::setLastFromId($last_id);
 
-        print_r($data);
-        return $last_id;
+            return $last_id;
+        } catch (\LogicException $exception) {
+            return null;
+        }
     }
 
     /**
@@ -103,13 +114,8 @@ class FormsHelper extends AbstractHelper
                 $return[$key]['default'] = sanitize_text_field($data[$key]['default']);
             }
 
-            if (!empty($data[$key]['required'])) {
-                $return[$key]['required'] = true;
-            }
-
-            if (!empty($data[$key]['hidden']) && empty($data[$key]['required'])) {
-                $return[$key]['hidden'] = true;
-            }
+            $return[$key]['required'] = (!empty($data[$key]['required']));
+            $return[$key]['hidden'] = (!empty($data[$key]['hidden']) && $return[$key]['required'] === false);
         }
 
         return $return;

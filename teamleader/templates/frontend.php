@@ -1,146 +1,142 @@
 <div class="teamleader-container">
     <form>
-        <?php
-        foreach ($fields as $key => $field) {
-            if (!isset($fields_options[$key]['public']) && (true !== $field['required'])) {
-                continue;
-            }
-
-            $label = !empty($fields_options[$key]['label']) ? $fields_options[$key]['label'] : $field['title'];
-            $required = (!empty($fields_options[$key]['required']) || $fields[$key]['required']) ? 'required="required"' : null;
-            $value = !empty($fields_options[$key]['default']) ? $fields_options[$key]['default'] : null;
+        <?php foreach ($fields as $key => $field):
             ?>
             <div class="form-group">
                 <label>
-                    <?php echo $label; ?>
-                    <?php
+                    <?php if ($field['type'] !== 'hidden') {
+                        echo $field['label'];
+                    }
+
+                    $required = $field['required'] ? 'required=required' : '';
+
                     switch ($field['type']) {
                         case 'textarea':
-                            echo '<textarea name="data[' . $key . ']" placeholder="" ' . $required . ' class="form-control">' . $value . '</textarea>';
+                            echo '<textarea name="' . $key . '" placeholder="" ' . $required . ' class="form-control">' . $field['value'] . '</textarea>';
                             break;
                         case 'number':
-                            echo '<input type="number" name="data[' . $key . ']" value="' . $value . '" placeholder="" ' . $required . ' class="form-control">';
+                            echo '<input type="number" name="' . $key . '" value="' . $field['value'] . '" placeholder="" ' . $required . ' class="form-control">';
                             break;
                         case 'boolean':
-                            $checked = !empty($value) ? 'checked' : '';
-                            echo '<input type="checkbox" name="data[' . $key . ']" ' . $required . ' ' . $checked . ' class="form-control">';
+                            $checked = !empty($field['value']) ? 'checked' : '';
+                            echo '<input type="checkbox" name="' . $key . '" ' . $required . ' ' . $checked . ' class="form-control">';
+                            break;
+                        case 'hidden':
+                            echo '<input type="hidden" name="' . $key . '" value=" ' . $field['value'] . '">';
                             break;
                         default:
-                            echo '<input type="text" name="data[' . $key . ']" value="' . $value . '" placeholder="" ' . $required . ' class="form-control">';
+                            echo '<input type="text" name="' . $key . '" value="' . $field['value'] . '" placeholder="" ' . $required . ' class="form-control">';
                             break;
                     }
                     ?>
                 </label>
             </div>
-            <?php
-        }
-        ?>
-        <?php if (!empty($form['logo'])): ?>
+        <?php endforeach; ?>
+        <?php if (true === $options['logo']): ?>
             <div class="teamleader-powered"><?php _e('Powered by', 'teamleader'); ?>
-                <a href="http://referral.teamleader.eu/en?token=<?php echo (!empty($form['referral_token'])) ? $form['referral_token'] : 'refferal'; ?>"
+                <a href="http://referral.teamleader.eu/en?token=<?php echo (!empty($options['referral_token'])) ? $options['referral_token'] : 'refferal'; ?>"
                    target="_blank">Teamleader</a>
-                <img src="<?php echo $logo; ?>" alt="<?php _e('Teamleader', 'teamleader'); ?>"></div>
+                <img src="<?php echo $logo; ?>" alt="<?php _e('Teamleader', $key); ?>"></div>
         <?php endif; ?>
 
-        <?php if ($form['recaptcha']): ?>
+        <?php if (true === $options['recaptcha']): ?>
             <button type="submit" class="btn btn-primary g-recaptcha teamleader-submit"
-                    data-sitekey="<?php echo $form['recaptcha_site_key']; ?>"
+                    data-sitekey="<?php echo $options['recaptcha_site_key']; ?>"
                     data-callback="checkRecaptcha"
-                    data-size="invisible"><?php echo $form['submit']; ?></button>
+                    data-size="invisible"><?php echo $form['form']['submit']; ?></button>
         <?php else: ?>
-            <button type="submit" class="btn btn-primary teamleader-submit"><?php echo $form['submit']; ?></button>
+            <button type="submit"
+                    class="btn btn-primary teamleader-submit"><?php echo $form['form']['submit']; ?></button>
         <?php endif; ?>
     </form>
     <div class="teamleader-success" data-success
          style="display: none;"><?php echo addslashes($form['success']); ?></div>
-    <div class="teamleader-error" data-error style="display: none;">Error sending form. Please contact system
-        administrator.
+    <div class="teamleader-error" data-error style="display: none;"><?php _e('Error sending form. Please contact system
+        administrator.', $key); ?>
     </div>
 </div>
 <script>
-    var container,
-        form,
-        success,
-        error,
-        submit,
-        init = function () {
-            container = jQuery('.teamleader-container'),
-                form = container.find('form'),
-                success = container.find('[data-success]'),
-                error = container.find('[data-error]'),
-                submit = container.find('input[type=submit]');
+  var container,
+    form,
+    success,
+    error,
+    submit,
+    init = function () {
+      container = jQuery('.teamleader-container'),
+        form = container.find('form'),
+        success = container.find('[data-success]'),
+        error = container.find('[data-error]'),
+        submit = container.find('button[type=submit]')
 
-            form.submit(function (e) {
-                e.preventDefault();
-                <?php if (empty($form['recaptcha'])): ?>
-                submitData();
-                <?php endif;?>
-            });
+      form.submit(function (e) {
+        e.preventDefault()
+          <?php if (true !== $options['recaptcha']): ?>
+        submitData()
+          <?php endif;?>
+      })
+    },
+    form_success = function () {
+      form.hide()
+      error.hide()
+      success.fadeIn()
+
+      setTimeout(function () {
+        success.fadeOut()
+        form.fadeIn()
+      }, 10000)
+    },
+    form_error = function (message) {
+      form.hide()
+      success.hide()
+      error.fadeIn()
+
+      if (message.length > 0) {
+        error.html(message)
+      }
+
+      setTimeout(function () {
+        error.fadeOut()
+        form.fadeIn()
+      }, 10000)
+    },
+    submitData = function () {
+      var data = 'action=<?php echo $key;?>&' + form.serialize(),
+        has_error = false
+
+      form.find('input').each(function () {
+        var input = jQuery(this)
+
+        if (input.prop('required') && input.val().length === 0) {
+          input.addClass('invalid')
+          has_error = true
+        } else {
+          input.removeClass('invalid')
+        }
+      })
+
+      if (has_error) {
+        return
+      }
+
+      jQuery.ajax({
+        method: 'POST',
+        url: '<?php echo admin_url('admin-ajax.php');?>',
+        data: data,
+        success: function (data) {
+          var response = jQuery.parseJSON(data)
+
+          if (true === response.success) {
+            form_success()
+            return
+          }
+          form_error(response.message)
         },
-        form_success = function () {
-            form.hide();
-            error.hide();
-            success.fadeIn();
-
-            setTimeout(function () {
-                success.fadeOut();
-                form.fadeIn();
-            }, 10000);
-        },
-        form_error = function (message) {
-            form.hide();
-            success.hide();
-            error.fadeIn();
-
-            if (message.length > 0) {
-                error.html(message);
-            }
-
-            setTimeout(function () {
-                error.fadeOut();
-                form.fadeIn();
-            }, 10000);
-        },
-        submitData = function () {
-            var data = 'action=teamleader&' + form.serialize(),
-                has_error = false;
-
-            form.find('input').each(function () {
-                var input = jQuery(this);
-
-                if (input.prop('required') && input.val().length === 0) {
-                    input.addClass('invalid');
-                    has_error = true;
-                } else {
-                    input.removeClass('invalid');
-                }
-            });
-
-            if (has_error) {
-                return;
-            }
-
-            jQuery.ajax({
-                method: 'POST',
-                url: '<?php echo admin_url('admin-ajax.php');?>',
-                data: data,
-                success: function (data) {
-                    var response = jQuery.parseJSON(data);
-
-                    if (true === response.success) {
-                        form_success();
-                        return;
-                    }
-
-                    form_error(response.message);
-                }
-            });
-        },
-        checkRecaptcha = function (token) {
-            submitData();
-        };
-
-    jQuery(document).ready(function () {
-        init();
-    });
+      })
+    },
+    checkRecaptcha = function (token) {
+      submitData()
+    }
+  jQuery(document).ready(function () {
+    init()
+  })
 </script>

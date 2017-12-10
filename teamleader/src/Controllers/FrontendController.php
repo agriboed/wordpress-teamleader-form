@@ -6,10 +6,10 @@
 
 namespace Teamleader\Controllers;
 
-use Teamleader\Helpers\FieldsHelper;
-use Teamleader\Interfaces\HooksInterface;
 use Teamleader\DependencyInjection\Container;
+use Teamleader\Interfaces\HooksInterface;
 use Teamleader\Helpers\OptionsHelper;
+use Teamleader\Helpers\FieldsHelper;
 
 /**
  * Class Frontend
@@ -17,6 +17,21 @@ use Teamleader\Helpers\OptionsHelper;
  */
 class FrontendController extends AbstractController implements HooksInterface
 {
+    /**
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * @var array
+     */
+    protected $forms;
+
+    /**
+     * @var array
+     */
+    protected $fields;
+
     /**
      * Set Wordpress hooks
      */
@@ -33,14 +48,15 @@ class FrontendController extends AbstractController implements HooksInterface
      */
     public function processShortcode($atts = array())
     {
-        $atts = shortcode_atts([], $atts);
+        $atts = shortcode_atts(['id' => null], $atts);
 
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
-        $optionsHelper = $this->container->get(OptionsHelper::class);
+        if (null === $atts['id']) {
+            return '';
+        }
+        $this->id = (int)$atts['id'];
+        $this->forms = OptionsHelper::getForms();
 
-        if (null === $optionsHelper->getWebhook()) {
+        if (!isset($this->forms[$this->id])) {
             return '';
         }
 
@@ -60,25 +76,35 @@ class FrontendController extends AbstractController implements HooksInterface
          * @var $fieldsHelper FieldsHelper
          */
         $fieldsHelper = $this->container->get(FieldsHelper::class);
+        $options = OptionsHelper::getOptions();
+        $form = $this->forms[$this->id];
 
-        /**
-         * @var $optionsHelper OptionsHelper
-         */
-        $optionsHelper = $this->container->get(OptionsHelper::class);
-
-        $form = $optionsHelper->getForm();
-
-        if ( ! empty($form['recaptcha'])) {
+        if (!empty($options['recaptcha'])) {
             wp_enqueue_script('google-api', 'https://www.google.com/recaptcha/api.js', [], true);
         }
 
-        $fields         = $fieldsHelper->getFields();
-        $fields_options = $optionsHelper->getFields();
-
-        $form['submit']  = ! empty($form['submit']) ? $form['submit'] : __('Submit', Container::key());
-        $form['success'] = ! empty($form['success']) ? $form['success'] : __('Thank you!', Container::key());
-
+        $this->fields = $fieldsHelper->getFields();
         $logo = Container::pluginUrl() . 'assets/images/logo.png';
+        $fields = [];
+        $key = Container::key();
+
+        foreach ($this->fields as $key => $field) {
+            if (!isset($form[$key]) || $form[$key]['active'] !== true) {
+                continue;
+            }
+
+            $field = [
+                'label' => isset($form[$key]['label']) ? $form[$key]['label'] : $this->fields[$key]['title'],
+                'value' => isset($form[$key]['default']) ? $form[$key]['default'] : '',
+                'required' => true ===  $form[$key]['required'] || true === $field['required']
+            ];
+
+            if ($form[$key]['hidden']) {
+                $field['type'] = 'hidden';
+            }
+
+            $fields[$key] = $field;
+        }
 
         // allows to set template using own template
         if (file_exists(get_template_directory() . '/teamleader/frontend.php')) {
@@ -87,7 +113,7 @@ class FrontendController extends AbstractController implements HooksInterface
             $path = Container::pluginDir() . '/templates/frontend.php';
         }
 
-        if ( ! file_exists($path)) {
+        if (!file_exists($path)) {
             throw new \LogicException('Frontend template not found');
         }
 

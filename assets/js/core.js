@@ -33,6 +33,8 @@ class App {
   init() {
     this.bindActive()
       .bindCreateForm()
+      .bindDeleteForm()
+      .bindEditForm()
       .bindReCaptcha()
       .bindLogo()
       .bindSaveOptions();
@@ -160,6 +162,14 @@ class App {
       data.action = 'teamleader_create';
       data.nonce = this.nonce;
 
+      const success = (id) => {
+        this.getElement('[data-container=create]').html('');
+        this.getElement('[data-action=createForm]').fadeIn('normal');
+        this.showMessage('Form added');
+
+        this.displayNewForm(id, title.val());
+      };
+
       jQuery.ajax({
         url: this.url,
         method: 'post',
@@ -167,18 +177,41 @@ class App {
         dataType: 'json',
         success: (response) => {
           this.showMessage(response.message);
+          if (response.success === true) {
+            success(response.id);
+          }
         },
         error: () => {
           this.showMessage('Server error. Please, try again');
         },
       });
-
-      this.getElement('[data-container=create]').html('');
-      this.getElement('[data-action=createForm]').fadeIn('normal');
-      this.showMessage('Form added');
     });
   }
 
+  /**
+   *
+   * @param id
+   * @param title
+   */
+  displayNewForm(id, title) {
+    const form = jQuery(document.createElement('div'));
+    const template = this.getElement('#templateForm').html();
+
+    form.html(template);
+    form.hide();
+
+    form.find('[data-element=title]').html(title);
+    form.find('[data-element=id]').html(id);
+    form.find('[data-action=editForm]').data('param', id);
+    form.find('[data-action=deleteForm]').data('param', id);
+
+    this.forms.push(form);
+
+    this.getElement('[data-container=forms]').append(form);
+    form.fadeIn('normal');
+    this.bindDeleteForm();
+    this.bindEditForm();
+  }
   /**
    *
    * @param el
@@ -197,30 +230,33 @@ class App {
 
     button.click((e) => {
       e.preventDefault();
+      this.saveOptions(button);
+    });
+  }
 
-      const form = button.closest('form');
-      const data = {
-        action: 'teamleader_options',
-        nonce: this.nonce,
-      };
+  saveOptions(button) {
+    const form = button.closest('form');
+    const data = {
+      action: 'teamleader_options',
+      nonce: this.nonce,
+    };
 
-      jQuery(form.serializeArray()).each((i, el) => {
-        data[el.name] = el.value;
-      });
+    jQuery(form.serializeArray()).each((i, el) => {
+      data[el.name] = el.value;
+    });
 
-      jQuery.ajax({
-        url: this.url,
-        method: 'post',
-        data,
-        dataType: 'json',
-        success: (response) => {
-          this.showMessage(response.message);
-        },
-        error: (response) => {
-          console.log(response);
-          this.showMessage('Server error. Please, try again');
-        },
-      });
+    jQuery.ajax({
+      url: this.url,
+      method: 'post',
+      data,
+      dataType: 'json',
+      success: (response) => {
+        this.showMessage(response.message);
+      },
+      error: (response) => {
+        console.log(response);
+        this.showMessage('Server error. Please, try again');
+      },
     });
   }
 
@@ -275,6 +311,63 @@ class App {
 
   /**
    *
+   * @returns {App}
+   */
+  bindDeleteForm() {
+    const buttons = this.getElement('[data-action=deleteForm]');
+    buttons.unbind();
+    buttons.click((e) => {
+      const button = jQuery(e.target);
+      this.deleteForm(button);
+    });
+    return this;
+  }
+
+  /**
+   *
+   * @param button
+   */
+  deleteForm(button) {
+    jQuery.ajax({
+      url: this.url,
+      method: 'post',
+      data: {
+        action: 'teamleader_delete',
+        nonce: this.nonce,
+        id: button.data('param'),
+      },
+      dataType: 'json',
+      success: (response) => {
+        this.showMessage(response.message);
+
+        if (response.success === true) {
+          button.closest('[data-element=form]').fadeOut('normal');
+        }
+      },
+      error: (response) => {
+        console.log(response);
+        this.showMessage('Server error. Please, try again');
+      },
+    });
+  }
+
+  bindEditForm() {
+    const buttons = this.getElement('[data-action=editForm]');
+
+    buttons.click((e) => {
+      const button = jQuery(e.target);
+      this.editForm(button.data('param'));
+    });
+
+    return this;
+  }
+
+  editForm(id) {
+
+  }
+
+  /**
+   *
    * @param message
    * @param success
    */
@@ -297,7 +390,6 @@ class App {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
 const TeamLeader = (options) => {
   new App(options);
 };
