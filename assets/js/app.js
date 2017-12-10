@@ -130,11 +130,16 @@ class App {
     form.fadeIn();
   }
 
+  /**
+   *
+   * @param form
+   * @returns {{}}
+   */
   getFormData(form) {
     const unindexedArray = form.serializeArray();
     const indexedArray = {};
 
-    jQuery.map(unindexedArray, (n, i) => {
+    jQuery.map(unindexedArray, (n) => {
       indexedArray[n.name] = n.value;
     });
 
@@ -262,10 +267,10 @@ class App {
 
   bindActivateField(el) {
     el.click((e) => {
-      const el = jQuery(e.target);
-      const field = el.closest('.tl__field');
+      const checkbox = jQuery(e.target);
+      const field = checkbox.closest('.tl__field');
 
-      if (el.attr('checked') === 'checked') {
+      if (checkbox.attr('checked') === 'checked') {
         field.removeClass('tl__disabled');
         field.find('input').removeAttr('disabled');
       } else {
@@ -275,6 +280,10 @@ class App {
     });
   }
 
+  /**
+   *
+   * @param el
+   */
   bindHiddenField(el) {
     el.click((e) => {
       const hiddenRadio = jQuery(e.target);
@@ -292,6 +301,10 @@ class App {
     });
   }
 
+  /**
+   *
+   * @param el
+   */
   bindRequiredField(el) {
     el.click((e) => {
       const requiredRadio = jQuery(e.target);
@@ -362,8 +375,11 @@ class App {
     return this;
   }
 
+  /**
+   *
+   * @param id
+   */
   editForm(id) {
-
   }
 
   /**
@@ -390,6 +406,6 @@ class App {
   }
 }
 
-const TeamLeader = (options) => {
+const TeamLeaderAdmin = (options) => {
   new App(options);
 };

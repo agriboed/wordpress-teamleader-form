@@ -82,10 +82,10 @@ class AdminController extends AbstractController implements HooksInterface
             'fields' => $fieldsHelper->getFields(),
         ];
 
-        if (!file_exists(Container::pluginDir() . '/templates/options.php')) {
+        if (!file_exists(Container::pluginDir() . '/templates/admin.php')) {
             throw new \LogicException('Options template not found');
         }
 
-        require Container::pluginDir() . '/templates/options.php';
+        require Container::pluginDir() . '/templates/admin.php';
     }
 }
