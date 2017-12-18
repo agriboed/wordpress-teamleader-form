@@ -39,9 +39,9 @@
                 <img src="<?php echo $logo; ?>" alt="<?php _e('Teamleader', $key); ?>"></div>
         <?php endif; ?>
 
-        <?php if (true === $options['recaptcha']): ?>
+        <?php if (true === $options['recaptcha']['enable']): ?>
             <button type="submit" class="btn btn-primary g-recaptcha teamleader-submit"
-                    data-sitekey="<?php echo $options['recaptcha_site_key']; ?>"
+                    data-sitekey="<?php echo isset($options['recaptcha']['key']) ? $options['recaptcha']['key'] : ''; ?>"
                     data-callback="checkRecaptcha"
                     data-size="invisible"><?php echo $form['form']['submit']; ?></button>
         <?php else: ?>
@@ -70,7 +70,7 @@
 
       form.submit(function (e) {
         e.preventDefault()
-          <?php if (true !== $options['recaptcha']): ?>
+          <?php if (true !== $options['recaptcha']['enable']): ?>
         submitData()
           <?php endif;?>
       })

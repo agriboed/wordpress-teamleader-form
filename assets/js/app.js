@@ -117,7 +117,7 @@ class App {
     form.html(template);
     form.hide();
     form.find('[data-element=titleEdit]').hide();
-    form.find('[data-action=saveChanges]').hide();
+    form.find('[data-action=saveForm]').hide();
 
     this.forms.push(form);
 

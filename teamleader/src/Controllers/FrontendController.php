@@ -94,6 +94,7 @@ class FrontendController extends AbstractController implements HooksInterface
             }
 
             $field = [
+                'type' => $field['type'],
                 'label' => isset($form[$key]['label']) ? $form[$key]['label'] : $this->fields[$key]['title'],
                 'value' => isset($form[$key]['default']) ? $form[$key]['default'] : '',
                 'required' => true ===  $form[$key]['required'] || true === $field['required']

@@ -28,7 +28,7 @@
                         <div class="tl__webhook">
                             <label>
                                 <?php _e('Webhook URL', $data['key']); ?>
-                                <input value="<?php echo $data['options']['webhook']; ?>"
+                                <input value="<?php echo isset($data['options']['webhook']) ? $data['options']['webhook'] : '' ?>"
                                        name="webhook" class="tl_input">
                             </label>
                             <button class="button button-primary"

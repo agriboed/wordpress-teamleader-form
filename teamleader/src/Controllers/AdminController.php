@@ -66,9 +66,8 @@ class AdminController extends AbstractController implements HooksInterface
      */
     public function renderOptionsPage()
     {
-        wp_enqueue_style(Container::key(), Container::pluginUrl() . 'assets/css/admin.css', false, mt_rand(0, 22222));
-        wp_enqueue_script(Container::key(), Container::pluginUrl() . 'assets/js/app.js', ['jquery'], mt_rand(0, 22222),
-            Container::version());
+        wp_enqueue_style(Container::key(), Container::pluginUrl() . 'assets/css/admin.css', false, Container::version());
+        wp_enqueue_script(Container::key(), Container::pluginUrl() . 'assets/js/app.js', ['jquery'], Container::version());
 
         /**
          * @var $fieldsHelper FieldsHelper
