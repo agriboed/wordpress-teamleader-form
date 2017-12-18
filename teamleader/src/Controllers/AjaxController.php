@@ -11,7 +11,6 @@ use Teamleader\Helpers\FormsHelper;
 use Teamleader\Interfaces\AjaxInterface;
 use Teamleader\Interfaces\HooksInterface;
 use Teamleader\Helpers\OptionsHelper;
-use Teamleader\Helpers\FieldsHelper;
 use ReCaptcha\ReCaptcha;
 use Curl\Curl;
 
@@ -31,6 +30,8 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
         add_action('wp_ajax_' . Container::key(), [$this, 'frontHandler']);
         add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'frontHandler']);
 
+        add_action('wp_ajax_teamleader_get', [$this, 'getForm']);
+        add_action('wp_ajax_teamleader_save', [$this, 'saveForm']);
         add_action('wp_ajax_teamleader_options', [$this, 'saveOptions']);
         add_action('wp_ajax_teamleader_create', [$this, 'createForm']);
         add_action('wp_ajax_teamleader_delete', [$this, 'deleteForm']);
@@ -68,7 +69,7 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
 
             if (false === $resp->isSuccess()) {
                 $this->data['message'] = 'Recaptcha invalid';
-               return $this->renderJson();
+                return $this->renderJson();
             }
         }
 
@@ -110,6 +111,70 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
 
     /**
      *
+     * @throws \ReflectionException
+     * @throws \LogicException
+     */
+    public function getForm()
+    {
+        $this->data['success'] = false;
+
+        if (!isset($_POST['id']) || false === $this->checkNonce()) {
+            return $this->renderJson();
+        }
+
+        /**
+         * @var $formsHelper FormsHelper
+         */
+        $formsHelper = $this->container->get(FormsHelper::class);
+        $form = $formsHelper->getForm((int)$_POST['id']);
+
+        if (null === $form) {
+            $this->data['message'] = __('Form not found');
+            return $this->renderJson();
+        }
+
+        $this->data['success'] = true;
+        $this->data['form'] = $form;
+
+        return $this->renderJson();
+    }
+
+    /**
+     *
+     * @throws \ReflectionException
+     * @throws \Exception
+     * @throws \LogicException
+     */
+    public function saveForm()
+    {
+        $this->data['success'] = false;
+
+        if (false === $this->checkNonce()) {
+            return $this->renderJson();
+        }
+
+        if (empty($_POST['form']) && !isset($_POST['id'])) {
+            $this->data['message'] = __('Form is empty', Container::key());
+            return $this->renderJson();
+        }
+
+        /**
+         * @var $formsHelper FormsHelper
+         */
+        $formsHelper = $this->container->get(FormsHelper::class);
+
+        try {
+            $this->data['id'] = $formsHelper->updateForm((int)$_POST['id'], $_POST);
+            $this->data['success'] = true;
+            $this->data['message'] = __('Form saved', Container::key());
+        } catch (\LogicException $exception) {
+            $this->data['message'] = __('System error', Container::key());
+        }
+
+        return $this->renderJson();
+    }
+
+    /**
      * @throws \Exception
      */
     public function createForm()
@@ -129,6 +194,7 @@ class AjaxController extends AbstractController implements HooksInterface, AjaxI
          * @var $formsHelper FormsHelper
          */
         $formsHelper = $this->container->get(FormsHelper::class);
+
         try {
             $this->data['id'] = $formsHelper->createForm($_POST);
             $this->data['success'] = true;

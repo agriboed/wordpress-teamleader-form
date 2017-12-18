@@ -116,10 +116,12 @@ class App {
 
     form.html(template);
     form.hide();
+    form.find('[data-element=titleEdit]').hide();
+    form.find('[data-action=saveChanges]').hide();
 
     this.forms.push(form);
 
-    this.getElement('[data-container=create]').html(form);
+    this.getElement('[data-container=create]').html(form).fadeIn();
 
     this.bindSaveNewForm(form.find('[data-action=addForm]'));
     this.bindDiscardNewForm(form.find('[data-action=discardForm]'));
@@ -128,6 +130,108 @@ class App {
     this.bindHiddenField(form.find('[data-action=hiddenField]'));
 
     form.fadeIn();
+  }
+
+  /**
+   *
+   */
+  editForm(id) {
+    const form = jQuery(document.createElement('div'));
+    const template = this.getElement('#template').html();
+
+    form.html(template);
+    form.hide();
+    form.find('[data-element=titleCreate]').hide();
+    form.find('[data-action=addForm]').hide();
+
+    jQuery.ajax({
+      url: this.url,
+      method: 'post',
+      data: {
+        action: 'teamleader_get',
+        nonce: this.nonce,
+        id,
+      },
+      dataType: 'json',
+      success: (response) => {
+        if ((response.success !== true || !response.form) && response.message) {
+          return this.showMessage(response.message);
+        }
+
+        this.fillForm(form, response.form);
+        return true;
+      },
+      error: () => {
+        this.showMessage('Server error. Please, try again');
+      },
+    });
+
+    this.getElement('[data-container=edit]').html(form).fadeIn();
+
+    this.bindSaveForm(form.find('[data-action=saveForm]'), id);
+    this.bindDiscardNewForm(form.find('[data-action=discardForm]'));
+    this.bindActivateField(form.find('[data-action=activateField]'));
+    this.bindRequiredField(form.find('[data-action=requiredField]'));
+    this.bindHiddenField(form.find('[data-action=hiddenField]'));
+
+    form.fadeIn();
+  }
+
+  /**
+   * @param form
+   * @param data
+   */
+  fillForm(form, data) {
+    const fields = form.find('.tl__field');
+
+    if (!data.form) {
+      return;
+    }
+
+    if (data.form.title) {
+      form.find('[data-element=formTitle]').val(data.form.title);
+    }
+
+    if (data.form.submit) {
+      form.find('[data-element=formSubmit]').val(data.form.submit);
+    }
+
+    if (data.form.success) {
+      form.find('[data-element=formSuccess]').val(data.form.success);
+    }
+
+    jQuery.each(fields, (i, el) => {
+      const field = jQuery(el);
+      const key = field.data('param');
+      const fieldData = data[key];
+
+      if (fieldData) {
+        if (fieldData.active) {
+          field.removeClass('tl__disabled');
+          field.find('[data-element=active]').attr('checked', 'checked');
+          field.find('input').removeAttr('disabled');
+          field.find('textarea').removeAttr('disabled');
+        }
+
+        if (fieldData.label) {
+          field.find('[data-element=label]').val(fieldData.label);
+        }
+
+        if (fieldData.default) {
+          field.find('[data-element=default]').val(fieldData.default);
+        }
+
+        if (fieldData.required) {
+          field.find('.tl__hidden').addClass('tl__disabled');
+          field.find('[data-element=requiredTrue]').attr('checked', 'checked');
+        }
+
+        if (fieldData.hidden) {
+          field.find('.tl__required').addClass('tl__disabled');
+          field.find('[data-element=hiddenTrue]').attr('checked', 'checked');
+        }
+      }
+    });
   }
 
   /**
@@ -144,6 +248,54 @@ class App {
     });
 
     return indexedArray;
+  }
+
+  /**
+   *
+   * @param el
+   * @param id
+   */
+  bindSaveForm(el, id) {
+    el.click(() => {
+      const form = el.closest('form');
+      const title = form.find('[data-element=formTitle]');
+
+      if (title.val() === '') {
+        this.showMessage('Form title is empty', false);
+        title.addClass('error');
+        return;
+      }
+
+      title.removeClass('error');
+
+      const data = this.getFormData(form);
+      data.action = 'teamleader_save';
+      data.nonce = this.nonce;
+      data.id = id;
+
+      const success = () => {
+        this.getElement('[data-container=edit]').fadeOut();
+        this.showMessage('Form saved');
+        this.getElement(`[data-element=form${id}]`)
+          .find('[data-element=formTitle]').text(title.val());
+      };
+
+      jQuery.ajax({
+        url: this.url,
+        method: 'post',
+        data,
+        dataType: 'json',
+        success: (response) => {
+          this.showMessage(response.message);
+          if (response.success === true) {
+            success();
+          }
+        },
+        error: () => {
+          this.showMessage('Server error. Please, try again');
+        },
+      });
+    });
   }
 
   /**
@@ -168,7 +320,7 @@ class App {
       data.nonce = this.nonce;
 
       const success = (id) => {
-        this.getElement('[data-container=create]').html('');
+        this.getElement('[data-container=create]').fadeOut();
         this.getElement('[data-action=createForm]').fadeIn('normal');
         this.showMessage('Form added');
 
@@ -217,13 +369,24 @@ class App {
     this.bindDeleteForm();
     this.bindEditForm();
   }
+
   /**
    *
    * @param el
    */
   bindDiscardNewForm(el) {
     el.click(() => {
-      this.getElement('[data-container=create]').html('');
+      this.getElement('[data-container=create]').fadeOut();
+    });
+  }
+
+  /**
+   *
+   * @param el
+   */
+  bindDiscardForm(el) {
+    el.click(() => {
+      this.getElement('[data-container=edit]').fadeOut();
     });
   }
 
@@ -273,9 +436,11 @@ class App {
       if (checkbox.attr('checked') === 'checked') {
         field.removeClass('tl__disabled');
         field.find('input').removeAttr('disabled');
+        field.find('textarea').removeAttr('disabled');
       } else {
         field.addClass('tl__disabled');
         field.find('input').attr('disabled', 'disabled');
+        field.find('textarea').attr('disabled', 'disabled');
       }
     });
   }
@@ -373,13 +538,6 @@ class App {
     });
 
     return this;
-  }
-
-  /**
-   *
-   * @param id
-   */
-  editForm(id) {
   }
 
   /**

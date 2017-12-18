@@ -11,6 +11,48 @@ use Teamleader\DependencyInjection\Container;
 class FormsHelper extends AbstractHelper
 {
     /**
+     * @param $id
+     * @return null
+     */
+    public function getForm($id)
+    {
+        $forms = OptionsHelper::getForms();
+
+        foreach ($forms as $key => $form) {
+            if ($key === $id) {
+                return $form;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Method creates from from user's data and return last id
+     *
+     * @param int
+     * @param $data
+     * @return int
+     * @throws \Exception
+     * @throws \LogicException
+     * @throws \ReflectionException
+     */
+    public function updateForm($id, $data)
+    {
+        $forms = OptionsHelper::getForms();
+
+        try {
+            $data = $this->processData($data);
+            $forms[$id] = $data;
+            OptionsHelper::setForms($forms);
+
+            return true;
+        } catch (\LogicException $exception) {
+            return false;
+        }
+    }
+
+    /**
      * Method creates from from user's data and return last id
      *
      * @param $data
@@ -53,21 +95,6 @@ class FormsHelper extends AbstractHelper
         }
 
         return OptionsHelper::setForms($forms);
-    }
-
-    /**
-     * @param $id
-     * @return null
-     */
-    public function buildForm($id)
-    {
-        $forms = OptionsHelper::getForms();
-
-        $form = null;
-
-        if (!isset($forms[$id])) {
-            return null;
-        }
     }
 
     /**
