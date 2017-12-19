@@ -294,7 +294,7 @@
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="tl__hidden">
+                            <div class="tl__hidden" style="display: none;">
                                 <?php if (true !== $field['required']): ?>
                                     <?php _e('Hidden?', $data['key']); ?>
                                     <div class="tl__radio">
