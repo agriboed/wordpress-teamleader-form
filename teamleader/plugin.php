@@ -1,12 +1,15 @@
 <?php
 /**
  * Plugin Name: Teamleader Form Integration
- * Description: Plugin shows form on your website and allows to send data into CRM
+ * Description: Plugin provide integration between your website and Teamleader CRM
  * Author: AGriboed <alexv1rs@gmail.com>
- * Author URI: https://v1rus.ru/
+ * Author URI: https://github.com/agriboed/wp-teamleader-integration
  * Version: 1.3.1
  */
 
 require __DIR__ . '/vendor/autoload.php';
 
-new \Teamleader\Bootstrap(__FILE__);
+try {
+	new \Teamleader\Bootstrap( __FILE__ );
+} catch ( Exception $e ) {
+}

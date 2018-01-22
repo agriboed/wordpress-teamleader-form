@@ -21,7 +21,7 @@ gulp.task('default', () => {
     .pipe(babel({
       presets: ['env'],
     }))
-    .pipe(concat('app.js'))
+    .pipe(concat('teamleader.js'))
     .pipe(uglify())
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('./teamleader/assets/js'));

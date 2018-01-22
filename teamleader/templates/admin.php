@@ -328,7 +328,7 @@
     <script>
       (function ($) {
         $(document).ready(function () {
-          TeamLeaderAdmin({
+          TeamleaderAdmin({
             key: 'teamleader',
             url: '<?php echo admin_url('admin-ajax.php');?>',
             nonce: '<?php echo wp_create_nonce('teamleader');?>',

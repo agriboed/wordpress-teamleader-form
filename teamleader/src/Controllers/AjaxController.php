@@ -1,16 +1,12 @@
 <?php
-/**
- * Copyright (c) 2017 by AGriboed <alexv1rs@gmail.com>
- * https://v1rus.ru/
- */
 
 namespace Teamleader\Controllers;
 
 use Teamleader\DependencyInjection\Container;
-use Teamleader\Helpers\FormsHelper;
-use Teamleader\Interfaces\AjaxInterface;
 use Teamleader\Interfaces\HooksInterface;
+use Teamleader\Interfaces\AjaxInterface;
 use Teamleader\Helpers\OptionsHelper;
+use Teamleader\Helpers\FormsHelper;
 use ReCaptcha\ReCaptcha;
 use Curl\Curl;
 
@@ -18,229 +14,238 @@ use Curl\Curl;
  * Class AjaxHandler
  * @package Teamleader\Controllers
  */
-class AjaxController extends AbstractController implements HooksInterface, AjaxInterface
-{
-    protected $data;
+class AjaxController extends AbstractController implements HooksInterface, AjaxInterface {
 
-    /**
-     * Set Wordpress hooks
-     */
-    public function initHooks()
-    {
-        add_action('wp_ajax_' . Container::key(), [$this, 'frontHandler']);
-        add_action('wp_ajax_nopriv_' . Container::key(), [$this, 'frontHandler']);
+	/**
+	 * @var
+	 */
+	protected $data;
 
-        add_action('wp_ajax_teamleader_get', [$this, 'getForm']);
-        add_action('wp_ajax_teamleader_save', [$this, 'saveForm']);
-        add_action('wp_ajax_teamleader_options', [$this, 'saveOptions']);
-        add_action('wp_ajax_teamleader_create', [$this, 'createForm']);
-        add_action('wp_ajax_teamleader_delete', [$this, 'deleteForm']);
-    }
+	/**
+	 * Set Wordpress hooks
+	 */
+	public function initHooks() {
+		add_action( 'wp_ajax_' . Container::key(), [ $this, 'frontHandler' ] );
+		add_action( 'wp_ajax_nopriv_' . Container::key(), [ $this, 'frontHandler' ] );
 
-    /**
-     * @return bool
-     */
-    protected function checkNonce()
-    {
-        if (!isset($_POST['nonce'])) {
-            $this->data['message'] = __('Security Error', Container::key());
-            return false;
-        }
+		add_action( 'wp_ajax_teamleader_get', [ $this, 'getForm' ] );
+		add_action( 'wp_ajax_teamleader_save', [ $this, 'saveForm' ] );
+		add_action( 'wp_ajax_teamleader_options', [ $this, 'saveOptions' ] );
+		add_action( 'wp_ajax_teamleader_create', [ $this, 'createForm' ] );
+		add_action( 'wp_ajax_teamleader_delete', [ $this, 'deleteForm' ] );
+	}
 
-        if (wp_create_nonce('teamleader') !== $_POST['nonce']) {
-            $this->data['message'] = __('Security Error', Container::key());
-            return false;
-        }
+	/**
+	 * @return bool
+	 */
+	protected function checkNonce() {
+		if ( ! isset( $_POST['nonce'] ) ) {
+			$this->data['message'] = __( 'Security Error', Container::key() );
 
-        return true;
-    }
+			return false;
+		}
 
-    /**
-     * @throws \Exception
-     */
-    public function frontHandler()
-    {
-        $this->data['success'] = false;
-        $options = OptionsHelper::getOptions();
+		if ( wp_create_nonce( 'teamleader' ) !== $_POST['nonce'] ) {
+			$this->data['message'] = __( 'Security Error', Container::key() );
 
-        if (true === $options['recaptcha'] && !empty($options['recaptcha_secret_key'])) {
-            $recaptcha = new ReCaptcha($options['recaptcha_secret_key']);
-            $resp = $recaptcha->verify($_POST['g-recaptcha-response']);
+			return false;
+		}
 
-            if (false === $resp->isSuccess()) {
-                $this->data['message'] = 'Recaptcha invalid';
-                return $this->renderJson();
-            }
-        }
+		return true;
+	}
 
-        try {
-            $curl = new Curl();
-            $curl->post($options['webhook'], $_POST);
-            $this->data['success'] = true;
-            $this->data['message'] = __('Data sent', Container::key());
+	/**
+	 * @throws \Exception
+	 */
+	public function frontHandler() {
+		$this->data['success'] = false;
+		$options               = OptionsHelper::getOptions();
 
-        } catch (\LogicException $exception) {
-            $this->data['message'] = $exception->getMessage();
-        }
+		if ( ! empty( $options['recaptcha']['enable'] ) && ! empty( $options['recaptcha']['secret'] ) ) {
+			$recaptcha = new ReCaptcha( $options['recaptcha']['secret'] );
+			$resp      = $recaptcha->verify( $_POST['g-recaptcha-response'] );
 
-        return $this->renderJson();
-    }
+			if ( false === $resp->isSuccess() ) {
+				$this->data['message'] = __( 'Recaptcha invalid', Container::key() );
+				return $this->renderJson();
+			}
+		}
 
-    /**
-     * Store plugin options in database
-     *
-     */
-    public function saveOptions()
-    {
-        $this->data['success'] = false;
+		if ( null === $_POST['nonce'] || false === wp_verify_nonce( $_POST['nonce'], Container::key() ) ) {
+			$this->data['message'] = __( 'Security error. Please, reload the page', Container::key() );
 
-        if (false === $this->checkNonce()) {
-            return $this->renderJson();
-        }
+			return $this->renderJson();
+		}
 
-        if (empty($_POST['webhook'])) {
-            $this->data['message'] = __('Webhook is empty', Container::key());
-            return $this->renderJson();
-        }
+		try {
+			$curl = new Curl();
+			$curl->post( $options['webhook'], $_POST );
+			$this->data['success'] = true;
+			$this->data['message'] = __( 'Data sent', Container::key() );
 
-        OptionsHelper::setOptions($_POST);
-        $this->data['success'] = true;
-        $this->data['message'] = __('Settings saved', Container::key());
-        return $this->renderJson();
-    }
+		} catch ( \LogicException $exception ) {
+			$this->data['message'] = $exception->getMessage();
+		}
 
-    /**
-     *
-     * @throws \ReflectionException
-     * @throws \LogicException
-     */
-    public function getForm()
-    {
-        $this->data['success'] = false;
+		return $this->renderJson();
+	}
 
-        if (!isset($_POST['id']) || false === $this->checkNonce()) {
-            return $this->renderJson();
-        }
+	/**
+	 * Store plugin options in database
+	 *
+	 */
+	public function saveOptions() {
+		$this->data['success'] = false;
 
-        /**
-         * @var $formsHelper FormsHelper
-         */
-        $formsHelper = $this->container->get(FormsHelper::class);
-        $form = $formsHelper->getForm((int)$_POST['id']);
+		if ( false === $this->checkNonce() ) {
+			return $this->renderJson();
+		}
 
-        if (null === $form) {
-            $this->data['message'] = __('Form not found');
-            return $this->renderJson();
-        }
+		if ( empty( $_POST['webhook'] ) ) {
+			$this->data['message'] = __( 'Webhook is empty', Container::key() );
 
-        $this->data['success'] = true;
-        $this->data['form'] = $form;
+			return $this->renderJson();
+		}
 
-        return $this->renderJson();
-    }
+		OptionsHelper::setOptions( $_POST );
+		$this->data['success'] = true;
+		$this->data['message'] = __( 'Settings saved', Container::key() );
 
-    /**
-     *
-     * @throws \ReflectionException
-     * @throws \Exception
-     * @throws \LogicException
-     */
-    public function saveForm()
-    {
-        $this->data['success'] = false;
+		return $this->renderJson();
+	}
 
-        if (false === $this->checkNonce()) {
-            return $this->renderJson();
-        }
+	/**
+	 *
+	 * @throws \ReflectionException
+	 * @throws \LogicException
+	 */
+	public function getForm() {
+		$this->data['success'] = false;
 
-        if (empty($_POST['form']) && !isset($_POST['id'])) {
-            $this->data['message'] = __('Form is empty', Container::key());
-            return $this->renderJson();
-        }
+		if ( ! isset( $_POST['id'] ) || false === $this->checkNonce() ) {
+			return $this->renderJson();
+		}
 
-        /**
-         * @var $formsHelper FormsHelper
-         */
-        $formsHelper = $this->container->get(FormsHelper::class);
+		/**
+		 * @var $formsHelper FormsHelper
+		 */
+		$formsHelper = $this->container->get( FormsHelper::class );
+		$form        = $formsHelper->getForm( (int) $_POST['id'] );
 
-        try {
-            $this->data['id'] = $formsHelper->updateForm((int)$_POST['id'], $_POST);
-            $this->data['success'] = true;
-            $this->data['message'] = __('Form saved', Container::key());
-        } catch (\LogicException $exception) {
-            $this->data['message'] = __('System error', Container::key());
-        }
+		if ( null === $form ) {
+			$this->data['message'] = __( 'Form not found' );
 
-        return $this->renderJson();
-    }
+			return $this->renderJson();
+		}
 
-    /**
-     * @throws \Exception
-     */
-    public function createForm()
-    {
-        $this->data['success'] = false;
+		$this->data['success'] = true;
+		$this->data['form']    = $form;
 
-        if (false === $this->checkNonce()) {
-            return $this->renderJson();
-        }
+		return $this->renderJson();
+	}
 
-        if (empty($_POST['form'])) {
-            $this->data['message'] = __('Form is empty', Container::key());
-            return $this->renderJson();
-        }
+	/**
+	 *
+	 * @throws \ReflectionException
+	 * @throws \Exception
+	 * @throws \LogicException
+	 */
+	public function saveForm() {
+		$this->data['success'] = false;
 
-        /**
-         * @var $formsHelper FormsHelper
-         */
-        $formsHelper = $this->container->get(FormsHelper::class);
+		if ( false === $this->checkNonce() ) {
+			return $this->renderJson();
+		}
 
-        try {
-            $this->data['id'] = $formsHelper->createForm($_POST);
-            $this->data['success'] = true;
-            $this->data['message'] = __('Form created', Container::key());
-        } catch (\LogicException $exception) {
-            $this->data['message'] = __('System error', Container::key());
-        }
+		if ( empty( $_POST['form'] ) && ! isset( $_POST['id'] ) ) {
+			$this->data['message'] = __( 'Form is empty', Container::key() );
 
-        return $this->renderJson();
-    }
+			return $this->renderJson();
+		}
 
-    /**
-     *
-     * @throws \ReflectionException
-     * @throws \LogicException
-     */
-    public function deleteForm()
-    {
-        $this->data['success'] = false;
+		/**
+		 * @var $formsHelper FormsHelper
+		 */
+		$formsHelper = $this->container->get( FormsHelper::class );
 
-        if (false === $this->checkNonce()) {
-            return $this->renderJson();
-        }
+		try {
+			$this->data['id']      = $formsHelper->updateForm( (int) $_POST['id'], $_POST );
+			$this->data['success'] = true;
+			$this->data['message'] = __( 'Form saved', Container::key() );
+		} catch ( \LogicException $exception ) {
+			$this->data['message'] = __( 'System error', Container::key() );
+		}
 
-        if (!isset($_POST['id'])) {
-            $this->data['message'] = __('Nothing to delete', Container::key());
-            return $this->renderJson();
-        }
+		return $this->renderJson();
+	}
 
-        /**
-         * @var $formsHelper FormsHelper
-         */
-        $formsHelper = $this->container->get(FormsHelper::class);
-        $formsHelper->deleteForm((int)$_POST['id']);
+	/**
+	 * @throws \Exception
+	 */
+	public function createForm() {
+		$this->data['success'] = false;
 
-        $this->data['success'] = true;
-        $this->data['message'] = __('Form was deleted', Container::key());
-        return $this->renderJson();
-    }
+		if ( false === $this->checkNonce() ) {
+			return $this->renderJson();
+		}
 
-    /**
-     *
-     */
-    public function renderJson()
-    {
-        echo json_encode($this->data);
-        wp_die();
-    }
+		if ( empty( $_POST['form'] ) ) {
+			$this->data['message'] = __( 'Form is empty', Container::key() );
+
+			return $this->renderJson();
+		}
+
+		/**
+		 * @var $formsHelper FormsHelper
+		 */
+		$formsHelper = $this->container->get( FormsHelper::class );
+
+		try {
+			$this->data['id']      = $formsHelper->createForm( $_POST );
+			$this->data['success'] = true;
+			$this->data['message'] = __( 'Form created', Container::key() );
+		} catch ( \LogicException $exception ) {
+			$this->data['message'] = __( 'System error', Container::key() );
+		}
+
+		return $this->renderJson();
+	}
+
+	/**
+	 *
+	 * @throws \ReflectionException
+	 * @throws \LogicException
+	 */
+	public function deleteForm() {
+		$this->data['success'] = false;
+
+		if ( false === $this->checkNonce() ) {
+			return $this->renderJson();
+		}
+
+		if ( ! isset( $_POST['id'] ) ) {
+			$this->data['message'] = __( 'Nothing to delete', Container::key() );
+
+			return $this->renderJson();
+		}
+
+		/**
+		 * @var $formsHelper FormsHelper
+		 */
+		$formsHelper = $this->container->get( FormsHelper::class );
+		$formsHelper->deleteForm( (int) $_POST['id'] );
+
+		$this->data['success'] = true;
+		$this->data['message'] = __( 'Form was deleted', Container::key() );
+
+		return $this->renderJson();
+	}
+
+	/**
+	 *
+	 */
+	public function renderJson() {
+		echo json_encode( $this->data );
+		wp_die();
+	}
 }

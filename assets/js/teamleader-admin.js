@@ -2,21 +2,19 @@
 /**
  * global document, $
  */
-class App {
-  /**
-   *
-   */
+class Admin {
   constructor(options) {
     this.key = options.key;
     this.url = options.url;
     this.nonce = options.nonce;
     this.container = options.container;
     this.forms = [];
-    //  try {
-    this.init();
-    // } catch (e) {
-    //    console.log('Error:' + e);
-    //   }
+
+    try {
+      this.init();
+    } catch (e) {
+      console.log(`Error:${e}`);
+    }
   }
 
   /**
@@ -564,6 +562,6 @@ class App {
   }
 }
 
-const TeamLeaderAdmin = (options) => {
-  new App(options);
+const TeamleaderAdmin = (options) => {
+  new Admin(options);
 };

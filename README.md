@@ -2,5 +2,5 @@
 
 Requirements:
 
-PHP: 5.6
+PHP: 5.3
 Wordpress: 4.8
