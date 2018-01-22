@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Teamleader Form Integration
- * Description: Plugin provide integration between your website and Teamleader CRM
+ * Description: Plugin provides integration between your website and Teamleader CRM
  * Author: AGriboed <alexv1rs@gmail.com>
  * Author URI: https://github.com/agriboed/wp-teamleader-integration
  * Version: 1.3.1
